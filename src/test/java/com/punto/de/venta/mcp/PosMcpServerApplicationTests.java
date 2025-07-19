@@ -1,4 +1,4 @@
-package com.punto.de.venta.pos_mcp_server;
+package com.punto.de.venta.mcp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
