@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pos-mcp-server
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pos-mcp-server
+  template:
+    metadata:
+      labels:
+        app: pos-mcp-server
+    spec:
+      containers:
+      - name: pos-mcp-server
+        image: registry.gitlab.com/posapi/pos-mcp-server:0.0.1-SNAPSHOT
+        #imagePullPolicy: Always -> only work with repository images
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: dev
