@@ -28,7 +28,7 @@ public class AlertTools {
         this.userService = userService;
     }
     
-    @Tool(name = "createCustomAlert", description = "Creates a custom alert for an existing user. This tool requires a registered user (use createNewUser first if the user doesn't exist). Requires alert type, message, and scheduled date.")
+    @Tool(name = "createCustomAlert", description = "Crea una alerta personalizada para un usuario EXISTENTE. ÚSALO SOLO después de verificar que el usuario existe con 'checkUserExists'. Si el usuario no existe, usa 'createNewUser' primero. Requiere tipo de alerta, mensaje y fecha programada.")
     public String crearAlerta(@ToolParam String numeroTelefono, @ToolParam String tipoAlerta, 
                              @ToolParam String mensaje, @ToolParam String fechaProgramada) {
         log.info("Creando alerta para usuario: {} - Tipo: {}, Mensaje: {}", 

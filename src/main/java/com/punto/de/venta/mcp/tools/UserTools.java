@@ -19,7 +19,7 @@ public class UserTools {
         this.userService = userService;
     }
     
-    @Tool(name = "getUserByPhone", description = "Retrieves user information based on their phone number. Useful for identifying the user before performing financial operations. (use createNewUser first if the user doesn't exist)")
+    @Tool(name = "getUserByPhone", description = "Obtiene información de un usuario existente por su número de teléfono. ÚSALO SOLO si el usuario ya está registrado en el sistema. Si el usuario no existe, usa 'createNewUser' primero.")
     public String obtenerUsuarioPorTelefono(@ToolParam String numeroTelefono) {
         log.info("Obteniendo usuario por número de teléfono: {}", numeroTelefono);
         
@@ -42,7 +42,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "checkUserExists", description = "Verifies if a user exists with the provided phone number. Returns true if exists, false otherwise. (use createNewUser first if the user doesn't exist)")
+    @Tool(name = "checkUserExists", description = "Verifica si un usuario existe con el número de teléfono proporcionado. ÚSALO para determinar si necesitas crear un nuevo usuario o usar uno existente.")
     public String verificarExistenciaUsuario(@ToolParam String numeroTelefono) {
         log.info("Verificando existencia de usuario con número de teléfono: {}", numeroTelefono);
         
@@ -59,7 +59,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "createNewUser", description = "Creates a new user account with the provided information. This tool should be used when a user is not registered in the system and needs to create a new account. Requires name and phone number, currency is optional (defaults to MXN).")
+    @Tool(name = "createNewUser", description = "Crea una nueva cuenta de usuario. ÚSALO SOLO cuando el usuario no existe en el sistema y necesita registrarse por primera vez. Requiere nombre y número de teléfono, la moneda es opcional (por defecto MXN).")
     public String crearUsuario(@ToolParam String nombre, @ToolParam String numeroTelefono, @ToolParam String moneda) {
         log.info("Creando nuevo usuario: {} con teléfono: {}", nombre, numeroTelefono);
         

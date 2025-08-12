@@ -28,7 +28,7 @@ public class SavingGoalTools {
         this.userService = userService;
     }
     
-    @Tool(name = "createSavingGoal", description = "Creates a savings goal for an existing user. This tool requires a registered user (use createNewUser first if the user doesn't exist). Requires goal name, target amount, and target date.")
+    @Tool(name = "createSavingGoal", description = "Crea una meta de ahorro para un usuario EXISTENTE. ÚSALO SOLO después de verificar que el usuario existe con 'checkUserExists'. Si el usuario no existe, usa 'createNewUser' primero. Requiere nombre de la meta, monto objetivo y fecha meta.")
     public String crearMetaAhorro(@ToolParam String numeroTelefono, @ToolParam String nombreMeta, 
                                  @ToolParam BigDecimal montoObjetivo, @ToolParam String fechaMeta) {
         log.info("Creando meta de ahorro para usuario: {} - Meta: {}, Monto: {}", 

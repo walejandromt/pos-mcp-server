@@ -27,7 +27,7 @@ public class LoanTools {
         this.userService = userService;
     }
     
-    @Tool(name = "registerLoan", description = "Registers a new loan for an existing user. This tool requires a registered user (use createNewUser first if the user doesn't exist). Requires loan amount, interest rate, monthly payment amount, payment day, start date, and description.")
+    @Tool(name = "registerLoan", description = "Registra un nuevo préstamo para un usuario EXISTENTE. ÚSALO SOLO después de verificar que el usuario existe con 'checkUserExists'. Si el usuario no existe, usa 'createNewUser' primero. Requiere monto del préstamo, tasa de interés, monto del pago mensual, día de pago, fecha de inicio y descripción.")
     public String registrarPrestamo(@ToolParam String numeroTelefono, @ToolParam BigDecimal montoPrestamo, 
                                    @ToolParam BigDecimal tasaInteres, @ToolParam BigDecimal montoPago, 
                                    @ToolParam Integer diaPago, @ToolParam String fechaInicio, 
