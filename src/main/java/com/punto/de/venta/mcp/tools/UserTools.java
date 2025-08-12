@@ -19,7 +19,7 @@ public class UserTools {
         this.userService = userService;
     }
     
-    @Tool(name = "obtenerUsuarioPorTelefono", description = "Obtiene la información del usuario basándose en su número de teléfono. Útil para identificar al usuario antes de realizar operaciones financieras.")
+    @Tool(name = "getUserByPhone", description = "Retrieves user information based on their phone number. Useful for identifying the user before performing financial operations.")
     public String obtenerUsuarioPorTelefono(@ToolParam String numeroTelefono) {
         log.info("Obteniendo usuario por número de teléfono: {}", numeroTelefono);
         
@@ -42,7 +42,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "verificarExistenciaUsuario", description = "Verifica si existe un usuario con el número de teléfono proporcionado. Retorna true si existe, false en caso contrario.")
+    @Tool(name = "checkUserExists", description = "Verifies if a user exists with the provided phone number. Returns true if exists, false otherwise.")
     public String verificarExistenciaUsuario(@ToolParam String numeroTelefono) {
         log.info("Verificando existencia de usuario con número de teléfono: {}", numeroTelefono);
         
@@ -59,7 +59,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "crearUsuario", description = "Crea un nuevo usuario con la información proporcionada. Requiere nombre y número de teléfono.")
+    @Tool(name = "createNewUser", description = "Creates a new user account with the provided information. This tool should be used when a user is not registered in the system and needs to create a new account. Requires name and phone number, currency is optional (defaults to MXN).")
     public String crearUsuario(@ToolParam String nombre, @ToolParam String numeroTelefono, @ToolParam String moneda) {
         log.info("Creando nuevo usuario: {} con teléfono: {}", nombre, numeroTelefono);
         
