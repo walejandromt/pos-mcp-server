@@ -6,6 +6,8 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -24,18 +26,21 @@ public class ToolsConfigs {
             AnalyticsTools analyticsTools,
             OptimizationTools optimizationTools,
             CurrencyTools currencyTools) {
-        return List.of(
-            ToolCallbacks.from(estadoCuentaTools)[0],
-            ToolCallbacks.from(userTools)[0],
-            ToolCallbacks.from(transactionTools)[0],
-            ToolCallbacks.from(recurringTransactionTools)[0],
-            ToolCallbacks.from(loanTools)[0],
-            ToolCallbacks.from(budgetTools)[0],
-            ToolCallbacks.from(savingGoalTools)[0],
-            ToolCallbacks.from(alertTools)[0],
-            ToolCallbacks.from(analyticsTools)[0],
-            ToolCallbacks.from(optimizationTools)[0],
-            ToolCallbacks.from(currencyTools)[0]
-        );
+        
+        List<ToolCallback> allTools = new ArrayList<>();
+        
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(estadoCuentaTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(userTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(transactionTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(recurringTransactionTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(loanTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(budgetTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(savingGoalTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(alertTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(analyticsTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(optimizationTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(currencyTools)));
+        
+        return allTools;
     }
 }
