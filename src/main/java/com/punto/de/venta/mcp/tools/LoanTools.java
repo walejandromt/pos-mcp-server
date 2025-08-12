@@ -27,7 +27,7 @@ public class LoanTools {
         this.userService = userService;
     }
     
-    @Tool(name = "registrarPrestamo", description = "Registra un préstamo con monto, tasa de interés, pago mensual y fecha de inicio. Requiere el número de teléfono del usuario.")
+    @Tool(name = "registerLoan", description = "Registers a new loan for an existing user. This tool requires a registered user (use createNewUser first if the user doesn't exist). Requires loan amount, interest rate, monthly payment amount, payment day, start date, and description.")
     public String registrarPrestamo(@ToolParam String numeroTelefono, @ToolParam BigDecimal montoPrestamo, 
                                    @ToolParam BigDecimal tasaInteres, @ToolParam BigDecimal montoPago, 
                                    @ToolParam Integer diaPago, @ToolParam String fechaInicio, 
@@ -85,7 +85,7 @@ public class LoanTools {
         }
     }
     
-    @Tool(name = "listarPrestamos", description = "Lista todos los préstamos de un usuario. Requiere el número de teléfono del usuario.")
+    @Tool(name = "listUserLoans", description = "Lists all loans for a specific user. Requires the user's phone number.")
     public String listarPrestamos(@ToolParam String numeroTelefono) {
         log.info("Listando préstamos para usuario: {}", numeroTelefono);
         
@@ -125,7 +125,7 @@ public class LoanTools {
         }
     }
     
-    @Tool(name = "calcularPlanPagoDeudas", description = "Calcula un plan para pagar deudas más rápido con diferentes estrategias. Requiere el número de teléfono del usuario.")
+    @Tool(name = "calculateDebtPayoffPlan", description = "Calculates a debt payoff plan using different strategies (snowball or avalanche method). Requires the user's phone number and strategy type.")
     public String calcularPlanPagoDeudas(@ToolParam String numeroTelefono, @ToolParam String estrategia) {
         log.info("Calculando plan de pago de deudas para usuario: {} con estrategia: {}", numeroTelefono, estrategia);
         

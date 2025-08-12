@@ -19,7 +19,7 @@ public class UserTools {
         this.userService = userService;
     }
     
-    @Tool(name = "getUserByPhone", description = "Retrieves user information based on their phone number. Useful for identifying the user before performing financial operations.")
+    @Tool(name = "getUserByPhone", description = "Retrieves user information based on their phone number. Useful for identifying the user before performing financial operations. (use createNewUser first if the user doesn't exist)")
     public String obtenerUsuarioPorTelefono(@ToolParam String numeroTelefono) {
         log.info("Obteniendo usuario por número de teléfono: {}", numeroTelefono);
         
@@ -42,7 +42,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "checkUserExists", description = "Verifies if a user exists with the provided phone number. Returns true if exists, false otherwise.")
+    @Tool(name = "checkUserExists", description = "Verifies if a user exists with the provided phone number. Returns true if exists, false otherwise. (use createNewUser first if the user doesn't exist)")
     public String verificarExistenciaUsuario(@ToolParam String numeroTelefono) {
         log.info("Verificando existencia de usuario con número de teléfono: {}", numeroTelefono);
         
