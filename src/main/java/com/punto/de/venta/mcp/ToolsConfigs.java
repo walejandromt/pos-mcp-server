@@ -20,7 +20,10 @@ public class ToolsConfigs {
             LoanTools loanTools,
             BudgetTools budgetTools,
             SavingGoalTools savingGoalTools,
-            AlertTools alertTools) {
+            AlertTools alertTools,
+            AnalyticsTools analyticsTools,
+            OptimizationTools optimizationTools,
+            CurrencyTools currencyTools) {
         return List.of(
             ToolCallbacks.from(estadoCuentaTools)[0],
             ToolCallbacks.from(userTools)[0],
@@ -29,7 +32,10 @@ public class ToolsConfigs {
             ToolCallbacks.from(loanTools)[0],
             ToolCallbacks.from(budgetTools)[0],
             ToolCallbacks.from(savingGoalTools)[0],
-            ToolCallbacks.from(alertTools)[0]
+            ToolCallbacks.from(alertTools)[0],
+            ToolCallbacks.from(analyticsTools)[0],
+            ToolCallbacks.from(optimizationTools)[0],
+            ToolCallbacks.from(currencyTools)[0]
         );
     }
 }
