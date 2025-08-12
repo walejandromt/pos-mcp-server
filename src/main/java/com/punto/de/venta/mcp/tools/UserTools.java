@@ -19,7 +19,7 @@ public class UserTools {
         this.userService = userService;
     }
     
-    @Tool(name = "getUserByPhone", description = "Obtiene información de un usuario existente por su número de teléfono. ÚSALO SOLO si el usuario ya está registrado en el sistema. Si el usuario no existe, usa 'createNewUser' primero.")
+    @Tool(name = "obtenerUsuarioPorTelefono", description = "Obtiene la información del usuario basándose en su número de teléfono. Útil para identificar al usuario antes de realizar operaciones financieras.")
     public String obtenerUsuarioPorTelefono(@ToolParam String numeroTelefono) {
         log.info("Obteniendo usuario por número de teléfono: {}", numeroTelefono);
         
@@ -42,7 +42,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "checkUserExists", description = "Verifica si un usuario existe con el número de teléfono proporcionado. ÚSALO para determinar si necesitas crear un nuevo usuario o usar uno existente.")
+    @Tool(name = "verificarExistenciaUsuario", description = "Verifica si existe un usuario con el número de teléfono proporcionado. Retorna true si existe, false en caso contrario.")
     public String verificarExistenciaUsuario(@ToolParam String numeroTelefono) {
         log.info("Verificando existencia de usuario con número de teléfono: {}", numeroTelefono);
         
@@ -59,7 +59,7 @@ public class UserTools {
         }
     }
     
-    @Tool(name = "createNewUser", description = "Crea una nueva cuenta de usuario. ÚSALO SOLO cuando el usuario no existe en el sistema y necesita registrarse por primera vez. Requiere nombre y número de teléfono, la moneda es opcional (por defecto MXN).")
+    @Tool(name = "crearUsuario", description = "Crea un nuevo usuario con la información proporcionada. Requiere nombre y número de teléfono.")
     public String crearUsuario(@ToolParam String nombre, @ToolParam String numeroTelefono, @ToolParam String moneda) {
         log.info("Creando nuevo usuario: {} con teléfono: {}", nombre, numeroTelefono);
         

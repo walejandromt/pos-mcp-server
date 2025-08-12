@@ -190,7 +190,7 @@ public class SavingGoalTools {
         }
     }
     
-    @Tool(name = "generateSavingsPlan", description = "Generates a savings plan based on income/expenses and goal. Requires the user's phone number and goal name.")
+    @Tool(name = "generarPlanAhorro", description = "Genera un plan de ahorro según ingresos/gastos y meta. Requiere el número de teléfono del usuario y el nombre de la meta.")
     public String generarPlanAhorro(@ToolParam String numeroTelefono, @ToolParam String nombreMeta) {
         log.info("Generando plan de ahorro para usuario: {} - Meta: {}", numeroTelefono, nombreMeta);
         

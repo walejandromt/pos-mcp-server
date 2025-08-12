@@ -28,7 +28,7 @@ public class AlertTools {
         this.userService = userService;
     }
     
-    @Tool(name = "createCustomAlert", description = "Crea una alerta personalizada para un usuario EXISTENTE. ÚSALO SOLO después de verificar que el usuario existe con 'checkUserExists'. Si el usuario no existe, usa 'createNewUser' primero. Requiere tipo de alerta, mensaje y fecha programada.")
+    @Tool(name = "crearAlerta", description = "Crea una alerta personalizada para el usuario. Requiere el número de teléfono del usuario.")
     public String crearAlerta(@ToolParam String numeroTelefono, @ToolParam String tipoAlerta, 
                              @ToolParam String mensaje, @ToolParam String fechaProgramada) {
         log.info("Creando alerta para usuario: {} - Tipo: {}, Mensaje: {}", 
@@ -73,7 +73,7 @@ public class AlertTools {
         }
     }
     
-    @Tool(name = "listUserAlerts", description = "Lists all alerts for a specific user. Requires the user's phone number.")
+    @Tool(name = "listarAlertas", description = "Lista todas las alertas de un usuario. Requiere el número de teléfono del usuario.")
     public String listarAlertas(@ToolParam String numeroTelefono) {
         log.info("Listando alertas para usuario: {}", numeroTelefono);
         
@@ -114,7 +114,7 @@ public class AlertTools {
         }
     }
     
-    @Tool(name = "createBudgetExceededAlert", description = "Automatically creates an alert when a budget is exceeded. Requires the user's phone number and category.")
+    @Tool(name = "alertarPresupuestoExcedido", description = "Crea automáticamente una alerta cuando se supera un presupuesto. Requiere el número de teléfono del usuario y la categoría.")
     public String alertarPresupuestoExcedido(@ToolParam String numeroTelefono, @ToolParam String categoria) {
         log.info("Creando alerta de presupuesto excedido para usuario: {} - Categoría: {}", numeroTelefono, categoria);
         
@@ -152,7 +152,7 @@ public class AlertTools {
         }
     }
     
-    @Tool(name = "detectUnusualExpense", description = "Detects and alerts if there's an expense much higher than average. Requires the user's phone number and threshold amount.")
+    @Tool(name = "detectarGastoInusual", description = "Detecta y alerta si hay un gasto mucho mayor al promedio. Requiere el número de teléfono del usuario.")
     public String detectarGastoInusual(@ToolParam String numeroTelefono, @ToolParam BigDecimal umbral) {
         log.info("Detectando gastos inusuales para usuario: {} - Umbral: {}", numeroTelefono, umbral);
         
@@ -191,7 +191,7 @@ public class AlertTools {
         }
     }
     
-    @Tool(name = "suggestSavingsOpportunities", description = "Suggests adjustments based on spending patterns. Requires the user's phone number.")
+    @Tool(name = "sugerirOportunidadesAhorro", description = "Sugiere ajustes según patrones de gastos. Requiere el número de teléfono del usuario.")
     public String sugerirOportunidadesAhorro(@ToolParam String numeroTelefono) {
         log.info("Sugiriendo oportunidades de ahorro para usuario: {}", numeroTelefono);
         
