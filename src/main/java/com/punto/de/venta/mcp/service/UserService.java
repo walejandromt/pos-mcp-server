@@ -58,6 +58,17 @@ public class UserService {
         }
     }
     
+    public Optional<User> getUserByEmail(String email) {
+        log.info("Obteniendo usuario con email: {} desde: {}", email, usersApiUrl);
+        try {
+            User user = restTemplate.getForObject(usersApiUrl + "/email/{email}", User.class, email);
+            return Optional.ofNullable(user);
+        } catch (Exception e) {
+            log.error("Error al obtener usuario con email: {}", email, e);
+            return Optional.empty();
+        }
+    }
+    
     public User createUser(User user) {
         log.info("Creando nuevo usuario: {}", user.getName());
         return restTemplate.postForObject(usersApiUrl, user, User.class);
@@ -87,6 +98,17 @@ public class UserService {
             return exists != null && exists;
         } catch (Exception e) {
             log.error("Error al verificar existencia de usuario con teléfono: {}", phone, e);
+            return false;
+        }
+    }
+    
+    public boolean existsByEmail(String email) {
+        log.info("Verificando si existe usuario con email: {}", email);
+        try {
+            Boolean exists = restTemplate.getForObject(usersApiUrl + "/exists/email/{email}", Boolean.class, email);
+            return exists != null && exists;
+        } catch (Exception e) {
+            log.error("Error al verificar existencia de usuario con email: {}", email, e);
             return false;
         }
     }

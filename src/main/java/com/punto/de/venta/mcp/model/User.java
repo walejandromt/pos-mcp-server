@@ -13,6 +13,7 @@ public class User {
     private String id;
     private String name;
     private String phone;
+    private String email;
     private String currency;
     private LocalDateTime createdAt;
 }
