@@ -25,7 +25,9 @@ public class ToolsConfigs {
             AlertTools alertTools,
             AnalyticsTools analyticsTools,
             OptimizationTools optimizationTools,
-            CurrencyTools currencyTools) {
+            CurrencyTools currencyTools,
+            CreditCardTools creditCardTools,
+            CreditCardPaymentTools creditCardPaymentTools) {
         
         List<ToolCallback> allTools = new ArrayList<>();
         
@@ -40,6 +42,8 @@ public class ToolsConfigs {
         allTools.addAll(Arrays.asList(ToolCallbacks.from(analyticsTools)));
         allTools.addAll(Arrays.asList(ToolCallbacks.from(optimizationTools)));
         allTools.addAll(Arrays.asList(ToolCallbacks.from(currencyTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(creditCardTools)));
+        allTools.addAll(Arrays.asList(ToolCallbacks.from(creditCardPaymentTools)));
         
         return allTools;
     }
