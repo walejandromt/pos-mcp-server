@@ -24,8 +24,8 @@ public class CreditCardTools {
     }
     
     @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el ID del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
-    public String agregarTarjetaCredito(@ToolParam Long userId, @ToolParam String name, @ToolParam String bankName, 
-                                       @ToolParam String lastDigits, @ToolParam String creditLimit, @ToolParam String currency) {
+    public String agregarTarjetaCredito(@ToolParam Long userId, @ToolParam String name, @ToolParam(description = "Banco o emisor de la tarjeta.") String bankName, 
+                                       @ToolParam(description = "Últimos 4 dígitos de la tarjeta (ej. 1234).") String lastDigits, @ToolParam(description = "Límite total de crédito asignado por el banco.") String creditLimit, @ToolParam String currency, @ToolParam(description = "Día del mes en que cierra el periodo de facturación (ej. 20).") Integer cutOffDay) {
         log.info("Agregando tarjeta de crédito para usuario: {} con nombre: {}", userId, name);
         
         if (userId == null) {
@@ -39,6 +39,10 @@ public class CreditCardTools {
         if (lastDigits == null || lastDigits.trim().isEmpty()) {
             return "Error: Los últimos dígitos son requeridos";
         }
+
+        if (cutOffDay == null) {
+            return "Error: El día de corte es requerido";
+        }
         
         try {
             // Crear la tarjeta de crédito
@@ -46,6 +50,7 @@ public class CreditCardTools {
             creditCard.setUserId(userId);
             creditCard.setCardName(name);
             creditCard.setLastFourDigits(lastDigits);
+            creditCard.setCutOffDay(cutOffDay);
             
             if (creditLimit != null && !creditLimit.trim().isEmpty()) {
                 try {
