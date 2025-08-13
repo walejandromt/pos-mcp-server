@@ -28,7 +28,7 @@ public class SavingGoalTools {
         this.userService = userService;
     }
     
-    @Tool(name = "createSavingGoal", description = "Crea una meta de ahorro para un usuario EXISTENTE. ÚSALO SOLO después de verificar que el usuario existe con 'checkUserExists'. Si el usuario no existe, usa 'createNewUser' primero. Requiere nombre de la meta, monto objetivo y fecha meta.")
+    @Tool(name = "crearMetaAhorro", description = "Crea una meta de ahorro con fecha y monto objetivo. Requiere el número de teléfono del usuario.")
     public String crearMetaAhorro(@ToolParam String numeroTelefono, @ToolParam String nombreMeta, 
                                  @ToolParam BigDecimal montoObjetivo, @ToolParam String fechaMeta) {
         log.info("Creando meta de ahorro para usuario: {} - Meta: {}, Monto: {}", 
@@ -73,7 +73,7 @@ public class SavingGoalTools {
         }
     }
     
-    @Tool(name = "trackSavingGoalProgress", description = "Shows the progress of a specific savings goal. Requires the user's phone number and goal name.")
+    @Tool(name = "seguimientoMetaAhorro", description = "Ver el progreso de una meta de ahorro específica. Requiere el número de teléfono del usuario y el nombre de la meta.")
     public String seguimientoMetaAhorro(@ToolParam String numeroTelefono, @ToolParam String nombreMeta) {
         log.info("Verificando seguimiento de meta de ahorro para usuario: {} - Meta: {}", numeroTelefono, nombreMeta);
         
@@ -148,7 +148,7 @@ public class SavingGoalTools {
         }
     }
     
-    @Tool(name = "listUserSavingGoals", description = "Lists all savings goals for a specific user. Requires the user's phone number.")
+    @Tool(name = "listarMetasAhorro", description = "Lista todas las metas de ahorro de un usuario. Requiere el número de teléfono del usuario.")
     public String listarMetasAhorro(@ToolParam String numeroTelefono) {
         log.info("Listando metas de ahorro para usuario: {}", numeroTelefono);
         

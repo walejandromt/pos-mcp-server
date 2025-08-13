@@ -125,7 +125,7 @@ public class LoanTools {
         }
     }
     
-    @Tool(name = "calculateDebtPayoffPlan", description = "Calculates a debt payoff plan using different strategies (snowball or avalanche method). Requires the user's phone number and strategy type.")
+    @Tool(name = "calcularPlanPagoDeudas", description = "Calcula un plan para pagar deudas más rápido con diferentes estrategias. Requiere el número de teléfono del usuario.")
     public String calcularPlanPagoDeudas(@ToolParam String numeroTelefono, @ToolParam String estrategia) {
         log.info("Calculando plan de pago de deudas para usuario: {} con estrategia: {}", numeroTelefono, estrategia);
         
