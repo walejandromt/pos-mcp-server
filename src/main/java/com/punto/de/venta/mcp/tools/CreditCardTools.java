@@ -7,6 +7,8 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -18,9 +20,11 @@ import java.util.stream.Collectors;
 public class CreditCardTools {
     
     private final CreditCardService creditCardService;
+    private final ObjectMapper objectMapper;
     
     public CreditCardTools(CreditCardService creditCardService) {
         this.creditCardService = creditCardService;
+        this.objectMapper = new ObjectMapper();
     }
     
     @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el ID del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
@@ -70,7 +74,12 @@ public class CreditCardTools {
             }
             
             if (!metadata.isEmpty()) {
-                creditCard.setMetadata(metadata.toString());
+                try {
+                    creditCard.setMetadata(objectMapper.writeValueAsString(metadata));
+                } catch (JsonProcessingException e) {
+                    log.error("Error al convertir metadata a JSON", e);
+                    return "Error al procesar los datos de la tarjeta: " + e.getMessage();
+                }
             }
             
             CreditCard savedCreditCard = creditCardService.createCreditCard(creditCard);
