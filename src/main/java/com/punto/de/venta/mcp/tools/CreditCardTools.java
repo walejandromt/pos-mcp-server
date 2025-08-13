@@ -29,7 +29,7 @@ public class CreditCardTools {
     
     @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el ID del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
     public String agregarTarjetaCredito(@ToolParam Long userId, @ToolParam String name, @ToolParam(description = "Banco o emisor de la tarjeta.") String bankName, 
-                                       @ToolParam(description = "Últimos 4 dígitos de la tarjeta (ej. 1234).") String lastDigits, @ToolParam(description = "Límite total de crédito asignado por el banco.") String creditLimit, @ToolParam String currency, @ToolParam(description = "Día del mes en que cierra el periodo de facturación (ej. 20).") Integer cutOffDay) {
+                                       @ToolParam(description = "Últimos 4 dígitos de la tarjeta (ej. 1234).") String lastDigits, @ToolParam(description = "Límite total de crédito asignado por el banco.") String creditLimit, @ToolParam String currency, @ToolParam(description = "Día del mes en que cierra el periodo de facturación (ej. 20).") Integer cutOffDay, @ToolParam(description = "Día del mes en que vence el pago (ej. 10).") Integer paymentDueDay) {
         log.info("Agregando tarjeta de crédito para usuario: {} con nombre: {}", userId, name);
         
         if (userId == null) {
@@ -47,6 +47,10 @@ public class CreditCardTools {
         if (cutOffDay == null) {
             return "Error: El día de corte es requerido";
         }
+
+        if (paymentDueDay == null) {
+            return "Error: El día de pago es requerido";
+        }
         
         try {
             // Crear la tarjeta de crédito
@@ -55,6 +59,7 @@ public class CreditCardTools {
             creditCard.setCardName(name);
             creditCard.setLastFourDigits(lastDigits);
             creditCard.setCutOffDay(cutOffDay);
+            creditCard.setPaymentDueDay(paymentDueDay);
             
             if (creditLimit != null && !creditLimit.trim().isEmpty()) {
                 try {
