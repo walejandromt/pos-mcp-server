@@ -81,7 +81,7 @@ public class CreditCardPaymentTools {
                 
                 Transaction transaction = new Transaction();
                 User user = new User();
-                user.setId(creditCard.get().getUserId());
+                user.setId(creditCard.get().getUser().getId());
                 transaction.setUser(user);
                 transaction.setType("EXPENSE");
                 transaction.setCategory("Credit Card Payment");
@@ -197,7 +197,7 @@ public class CreditCardPaymentTools {
             
             // Obtener transacciones de gastos con tarjeta de crédito (asumiendo que se marcan con una categoría específica)
             List<Transaction> transactions = transactionService.getTransactionsByUserIdAndCategory(
-                card.getUserId(), "Credit Card");
+                card.getUser().getId(), "Credit Card");
             
             BigDecimal totalSpent = transactions.stream()
                 .map(Transaction::getAmount)
