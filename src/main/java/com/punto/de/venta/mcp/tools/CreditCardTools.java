@@ -2,9 +2,13 @@ package com.punto.de.venta.mcp.tools;
 
 import com.punto.de.venta.mcp.model.CreditCard;
 import com.punto.de.venta.mcp.service.CreditCardService;
+import com.punto.de.venta.mcp.service.UserService;
+
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,13 +23,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CreditCardTools {
     
-    private final CreditCardService creditCardService;
-    private final ObjectMapper objectMapper;
-    
-    public CreditCardTools(CreditCardService creditCardService) {
-        this.creditCardService = creditCardService;
-        this.objectMapper = new ObjectMapper();
-    }
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CreditCardService creditCardService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
     
     @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el ID del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
     public String agregarTarjetaCredito(@ToolParam Long userId, @ToolParam String name, @ToolParam(description = "Banco o emisor de la tarjeta.") String bankName, 
@@ -55,7 +60,7 @@ public class CreditCardTools {
         try {
             // Crear la tarjeta de crédito
             CreditCard creditCard = new CreditCard();
-            creditCard.setUserId(userId);
+            creditCard.setUser(userService.getUserById(userId).get());
             creditCard.setCardName(name);
             creditCard.setLastFourDigits(lastDigits);
             creditCard.setCutOffDay(cutOffDay);

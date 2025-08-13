@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class CreditCard {
     
     private Long id;
-    private Long userId;
+    private User user;
     private String cardName;
     private String lastFourDigits;
     private Integer cutOffDay;
