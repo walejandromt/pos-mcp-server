@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SavingGoal {
-    private String id;
+    private Long id;
     private User user;
     private String goalName;
     private BigDecimal targetAmount;

@@ -41,6 +41,29 @@ public class UserTools {
             return "Error al obtener la información del usuario: " + e.getMessage();
         }
     }
+
+    @Tool(name = "obtenerUserIdPorTelefono", description = "Obtiene userId basándose en su número de teléfono. Útil para identificar al usuario antes de realizar operaciones financieras.")
+    public String obtenerUserIdPorTelefono(@ToolParam String numeroTelefono) {
+        log.info("Obteniendo usuario por número de teléfono: {}", numeroTelefono);
+        
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
+        }
+        
+        try {
+            Optional<User> user = userService.getUserByPhone(numeroTelefono.trim());
+            if (user.isPresent()) {
+                User usuario = user.get();
+                return String.format("Usuario encontrado - ID (UserId): %s, Nombre: %s, Teléfono: %s, Moneda: %s", 
+                    usuario.getId(), usuario.getName(), usuario.getPhone(), usuario.getCurrency());
+            } else {
+                return "No se encontró ningún usuario con el número de teléfono: " + numeroTelefono;
+            }
+        } catch (Exception e) {
+            log.error("Error al obtener usuario por teléfono: {}", numeroTelefono, e);
+            return "Error al obtener la información del usuario: " + e.getMessage();
+        }
+    }
     
     @Tool(name = "verificarExistenciaUsuario", description = "Verifica si existe un usuario con el número de teléfono proporcionado. Retorna true si existe, false en caso contrario.")
     public String verificarExistenciaUsuario(@ToolParam String numeroTelefono) {

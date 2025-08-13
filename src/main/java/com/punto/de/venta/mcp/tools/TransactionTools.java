@@ -211,10 +211,10 @@ public class TransactionTools {
     }
     
     @Tool(name = "categorizarTransaccion", description = "Actualiza la categoría de una transacción existente. Requiere ID de transacción y nueva categoría.")
-    public String categorizarTransaccion(@ToolParam String idTransaccion, @ToolParam String nuevaCategoria) {
+    public String categorizarTransaccion(@ToolParam Long idTransaccion, @ToolParam String nuevaCategoria) {
         log.info("Categorizando transacción: {} con categoría: {}", idTransaccion, nuevaCategoria);
         
-        if (idTransaccion == null || idTransaccion.trim().isEmpty()) {
+        if (idTransaccion == null) {
             return "Error: El ID de la transacción no puede estar vacío";
         }
         
@@ -223,7 +223,7 @@ public class TransactionTools {
         }
         
         try {
-            Optional<Transaction> transactionOpt = transactionService.getTransactionById(idTransaccion.trim());
+            Optional<Transaction> transactionOpt = transactionService.getTransactionById(idTransaccion);
             if (transactionOpt.isEmpty()) {
                 return "Error: No se encontró la transacción con ID: " + idTransaccion;
             }
@@ -231,7 +231,7 @@ public class TransactionTools {
             Transaction transaction = transactionOpt.get();
             transaction.setCategory(nuevaCategoria.trim());
             
-            Transaction updatedTransaction = transactionService.updateTransaction(idTransaccion.trim(), transaction);
+            Transaction updatedTransaction = transactionService.updateTransaction(idTransaccion, transaction);
             return String.format("Transacción categorizada exitosamente - ID: %s, Nueva categoría: %s", 
                 updatedTransaction.getId(), updatedTransaction.getCategory());
         } catch (Exception e) {

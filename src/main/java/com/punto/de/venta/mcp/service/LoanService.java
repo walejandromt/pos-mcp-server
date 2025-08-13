@@ -36,7 +36,7 @@ public class LoanService {
         return response.getBody();
     }
     
-    public Optional<Loan> getLoanById(String id) {
+    public Optional<Loan> getLoanById(Long id) {
         log.info("Obteniendo préstamo con ID: {} desde: {}", id, loansApiUrl);
         try {
             Loan loan = restTemplate.getForObject(loansApiUrl + "/{id}", Loan.class, id);
@@ -47,7 +47,7 @@ public class LoanService {
         }
     }
     
-    public List<Loan> getLoansByUserId(String userId) {
+    public List<Loan> getLoansByUserId(Long userId) {
         log.info("Obteniendo préstamos para usuario: {} desde: {}", userId, loansApiUrl);
         ResponseEntity<List<Loan>> response = restTemplate.exchange(
             loansApiUrl + "/user/{userId}",
@@ -64,13 +64,13 @@ public class LoanService {
         return restTemplate.postForObject(loansApiUrl, loan, Loan.class);
     }
     
-    public Loan updateLoan(String id, Loan loan) {
+    public Loan updateLoan(Long id, Loan loan) {
         log.info("Actualizando préstamo con ID: {}", id);
         restTemplate.put(loansApiUrl + "/{id}", loan, id);
         return getLoanById(id).orElse(null);
     }
     
-    public boolean deleteLoan(String id) {
+    public boolean deleteLoan(Long id) {
         log.info("Eliminando préstamo con ID: {}", id);
         try {
             restTemplate.delete(loansApiUrl + "/{id}", id);

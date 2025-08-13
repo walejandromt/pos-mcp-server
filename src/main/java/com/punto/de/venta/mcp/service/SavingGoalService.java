@@ -36,7 +36,7 @@ public class SavingGoalService {
         return response.getBody();
     }
     
-    public Optional<SavingGoal> getSavingGoalById(String id) {
+    public Optional<SavingGoal> getSavingGoalById(Long id) {
         log.info("Obteniendo meta de ahorro con ID: {} desde: {}", id, savingGoalsApiUrl);
         try {
             SavingGoal savingGoal = restTemplate.getForObject(savingGoalsApiUrl + "/{id}", SavingGoal.class, id);
@@ -47,7 +47,7 @@ public class SavingGoalService {
         }
     }
     
-    public List<SavingGoal> getSavingGoalsByUserId(String userId) {
+    public List<SavingGoal> getSavingGoalsByUserId(Long userId) {
         log.info("Obteniendo metas de ahorro para usuario: {} desde: {}", userId, savingGoalsApiUrl);
         ResponseEntity<List<SavingGoal>> response = restTemplate.exchange(
             savingGoalsApiUrl + "/user/{userId}",
@@ -64,13 +64,13 @@ public class SavingGoalService {
         return restTemplate.postForObject(savingGoalsApiUrl, savingGoal, SavingGoal.class);
     }
     
-    public SavingGoal updateSavingGoal(String id, SavingGoal savingGoal) {
+    public SavingGoal updateSavingGoal(Long id, SavingGoal savingGoal) {
         log.info("Actualizando meta de ahorro con ID: {}", id);
         restTemplate.put(savingGoalsApiUrl + "/{id}", savingGoal, id);
         return getSavingGoalById(id).orElse(null);
     }
     
-    public boolean deleteSavingGoal(String id) {
+    public boolean deleteSavingGoal(Long id) {
         log.info("Eliminando meta de ahorro con ID: {}", id);
         try {
             restTemplate.delete(savingGoalsApiUrl + "/{id}", id);

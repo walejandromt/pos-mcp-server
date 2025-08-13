@@ -36,7 +36,7 @@ public class CreditCardService {
         return response.getBody();
     }
     
-    public Optional<CreditCard> getCreditCardById(String id) {
+    public Optional<CreditCard> getCreditCardById(Long id) {
         log.info("Obteniendo tarjeta de crédito con ID: {} desde: {}", id, creditCardsApiUrl);
         try {
             CreditCard creditCard = restTemplate.getForObject(creditCardsApiUrl + "/{id}", CreditCard.class, id);
@@ -47,7 +47,7 @@ public class CreditCardService {
         }
     }
     
-    public List<CreditCard> getCreditCardsByUserId(String userId) {
+    public List<CreditCard> getCreditCardsByUserId(Long userId) {
         log.info("Obteniendo tarjetas de crédito para usuario: {} desde: {}", userId, creditCardsApiUrl);
         ResponseEntity<List<CreditCard>> response = restTemplate.exchange(
             creditCardsApiUrl + "/user/{userId}",
@@ -59,7 +59,7 @@ public class CreditCardService {
         return response.getBody();
     }
     
-    public List<CreditCard> searchCreditCardsByUserIdAndCardName(String userId, String cardName) {
+    public List<CreditCard> searchCreditCardsByUserIdAndCardName(Long userId, String cardName) {
         log.info("Buscando tarjetas de crédito para usuario: {} con nombre: {} desde: {}", userId, cardName, creditCardsApiUrl);
         ResponseEntity<List<CreditCard>> response = restTemplate.exchange(
             creditCardsApiUrl + "/user/{userId}/search?cardName={cardName}",
@@ -76,13 +76,13 @@ public class CreditCardService {
         return restTemplate.postForObject(creditCardsApiUrl, creditCard, CreditCard.class);
     }
     
-    public CreditCard updateCreditCard(String id, CreditCard creditCard) {
+    public CreditCard updateCreditCard(Long id, CreditCard creditCard) {
         log.info("Actualizando tarjeta de crédito con ID: {}", id);
         restTemplate.put(creditCardsApiUrl + "/{id}", creditCard, id);
         return getCreditCardById(id).orElse(null);
     }
     
-    public boolean deleteCreditCard(String id) {
+    public boolean deleteCreditCard(Long id) {
         log.info("Eliminando tarjeta de crédito con ID: {}", id);
         try {
             restTemplate.delete(creditCardsApiUrl + "/{id}", id);

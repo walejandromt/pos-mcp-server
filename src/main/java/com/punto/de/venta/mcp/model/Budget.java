@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Budget {
-    private String id;
+    private Long id;
     private User user;
     private String category;
     private BigDecimal amountLimit;

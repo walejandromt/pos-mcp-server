@@ -36,7 +36,7 @@ public class BudgetService {
         return response.getBody();
     }
     
-    public Optional<Budget> getBudgetById(String id) {
+    public Optional<Budget> getBudgetById(Long id) {
         log.info("Obteniendo presupuesto con ID: {} desde: {}", id, budgetsApiUrl);
         try {
             Budget budget = restTemplate.getForObject(budgetsApiUrl + "/{id}", Budget.class, id);
@@ -47,7 +47,7 @@ public class BudgetService {
         }
     }
     
-    public List<Budget> getBudgetsByUserId(String userId) {
+    public List<Budget> getBudgetsByUserId(Long userId) {
         log.info("Obteniendo presupuestos para usuario: {} desde: {}", userId, budgetsApiUrl);
         ResponseEntity<List<Budget>> response = restTemplate.exchange(
             budgetsApiUrl + "/user/{userId}",
@@ -59,7 +59,7 @@ public class BudgetService {
         return response.getBody();
     }
     
-    public List<Budget> getBudgetsByUserIdAndCategory(String userId, String category) {
+    public List<Budget> getBudgetsByUserIdAndCategory(Long userId, String category) {
         log.info("Obteniendo presupuestos para usuario: {} con categoría: {} desde: {}", userId, category, budgetsApiUrl);
         ResponseEntity<List<Budget>> response = restTemplate.exchange(
             budgetsApiUrl + "/user/{userId}/category/{category}",
@@ -76,13 +76,13 @@ public class BudgetService {
         return restTemplate.postForObject(budgetsApiUrl, budget, Budget.class);
     }
     
-    public Budget updateBudget(String id, Budget budget) {
+    public Budget updateBudget(Long id, Budget budget) {
         log.info("Actualizando presupuesto con ID: {}", id);
         restTemplate.put(budgetsApiUrl + "/{id}", budget, id);
         return getBudgetById(id).orElse(null);
     }
     
-    public boolean deleteBudget(String id) {
+    public boolean deleteBudget(Long id) {
         log.info("Eliminando presupuesto con ID: {}", id);
         try {
             restTemplate.delete(budgetsApiUrl + "/{id}", id);

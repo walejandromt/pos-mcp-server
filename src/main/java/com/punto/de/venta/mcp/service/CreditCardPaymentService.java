@@ -37,7 +37,7 @@ public class CreditCardPaymentService {
         return response.getBody();
     }
     
-    public Optional<CreditCardPayment> getCreditCardPaymentById(String id) {
+    public Optional<CreditCardPayment> getCreditCardPaymentById(Long id) {
         log.info("Obteniendo pago de tarjeta de crédito con ID: {} desde: {}", id, creditCardPaymentsApiUrl);
         try {
             CreditCardPayment payment = restTemplate.getForObject(creditCardPaymentsApiUrl + "/{id}", CreditCardPayment.class, id);
@@ -48,7 +48,7 @@ public class CreditCardPaymentService {
         }
     }
     
-    public List<CreditCardPayment> getCreditCardPaymentsByCreditCardId(String creditCardId) {
+    public List<CreditCardPayment> getCreditCardPaymentsByCreditCardId(Long creditCardId) {
         log.info("Obteniendo pagos para tarjeta de crédito: {} desde: {}", creditCardId, creditCardPaymentsApiUrl);
         ResponseEntity<List<CreditCardPayment>> response = restTemplate.exchange(
             creditCardPaymentsApiUrl + "/credit-card/{creditCardId}",
@@ -60,7 +60,7 @@ public class CreditCardPaymentService {
         return response.getBody();
     }
     
-    public List<CreditCardPayment> getCreditCardPaymentsByCreditCardIdAndDateRange(String creditCardId, LocalDate startDate, LocalDate endDate) {
+    public List<CreditCardPayment> getCreditCardPaymentsByCreditCardIdAndDateRange(Long creditCardId, LocalDate startDate, LocalDate endDate) {
         log.info("Obteniendo pagos para tarjeta de crédito: {} en rango de fechas: {} - {} desde: {}", creditCardId, startDate, endDate, creditCardPaymentsApiUrl);
         ResponseEntity<List<CreditCardPayment>> response = restTemplate.exchange(
             creditCardPaymentsApiUrl + "/credit-card/{creditCardId}/date-range?startDate={startDate}&endDate={endDate}",
@@ -72,7 +72,7 @@ public class CreditCardPaymentService {
         return response.getBody();
     }
     
-    public List<CreditCardPayment> getCreditCardPaymentsByTransactionId(String transactionId) {
+    public List<CreditCardPayment> getCreditCardPaymentsByTransactionId(Long transactionId) {
         log.info("Obteniendo pagos para transacción: {} desde: {}", transactionId, creditCardPaymentsApiUrl);
         ResponseEntity<List<CreditCardPayment>> response = restTemplate.exchange(
             creditCardPaymentsApiUrl + "/transaction/{transactionId}",
@@ -89,13 +89,13 @@ public class CreditCardPaymentService {
         return restTemplate.postForObject(creditCardPaymentsApiUrl, payment, CreditCardPayment.class);
     }
     
-    public CreditCardPayment updateCreditCardPayment(String id, CreditCardPayment payment) {
+    public CreditCardPayment updateCreditCardPayment(Long id, CreditCardPayment payment) {
         log.info("Actualizando pago de tarjeta de crédito con ID: {}", id);
         restTemplate.put(creditCardPaymentsApiUrl + "/{id}", payment, id);
         return getCreditCardPaymentById(id).orElse(null);
     }
     
-    public boolean deleteCreditCardPayment(String id) {
+    public boolean deleteCreditCardPayment(Long id) {
         log.info("Eliminando pago de tarjeta de crédito con ID: {}", id);
         try {
             restTemplate.delete(creditCardPaymentsApiUrl + "/{id}", id);

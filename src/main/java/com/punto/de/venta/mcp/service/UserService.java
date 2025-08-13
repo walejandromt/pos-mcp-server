@@ -36,7 +36,7 @@ public class UserService {
         return response.getBody();
     }
     
-    public Optional<User> getUserById(String id) {
+    public Optional<User> getUserById(Long id) {
         log.info("Obteniendo usuario con ID: {} desde: {}", id, usersApiUrl);
         try {
             User user = restTemplate.getForObject(usersApiUrl + "/{id}", User.class, id);
@@ -74,13 +74,13 @@ public class UserService {
         return restTemplate.postForObject(usersApiUrl, user, User.class);
     }
     
-    public User updateUser(String id, User user) {
+    public User updateUser(Long id, User user) {
         log.info("Actualizando usuario con ID: {}", id);
         restTemplate.put(usersApiUrl + "/{id}", user, id);
         return getUserById(id).orElse(null);
     }
     
-    public boolean deleteUser(String id) {
+    public boolean deleteUser(Long id) {
         log.info("Eliminando usuario con ID: {}", id);
         try {
             restTemplate.delete(usersApiUrl + "/{id}", id);

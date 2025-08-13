@@ -36,7 +36,7 @@ public class AlertService {
         return response.getBody();
     }
     
-    public Optional<Alert> getAlertById(String id) {
+    public Optional<Alert> getAlertById(Long id) {
         log.info("Obteniendo alerta con ID: {} desde: {}", id, alertsApiUrl);
         try {
             Alert alert = restTemplate.getForObject(alertsApiUrl + "/{id}", Alert.class, id);
@@ -47,7 +47,7 @@ public class AlertService {
         }
     }
     
-    public List<Alert> getAlertsByUserId(String userId) {
+    public List<Alert> getAlertsByUserId(Long userId) {
         log.info("Obteniendo alertas para usuario: {} desde: {}", userId, alertsApiUrl);
         ResponseEntity<List<Alert>> response = restTemplate.exchange(
             alertsApiUrl + "/user/{userId}",
@@ -59,7 +59,7 @@ public class AlertService {
         return response.getBody();
     }
     
-    public List<Alert> getAlertsByUserIdAndStatus(String userId, String status) {
+    public List<Alert> getAlertsByUserIdAndStatus(Long userId, String status) {
         log.info("Obteniendo alertas para usuario: {} con estado: {} desde: {}", userId, status, alertsApiUrl);
         ResponseEntity<List<Alert>> response = restTemplate.exchange(
             alertsApiUrl + "/user/{userId}/status/{status}",
@@ -76,13 +76,13 @@ public class AlertService {
         return restTemplate.postForObject(alertsApiUrl, alert, Alert.class);
     }
     
-    public Alert updateAlert(String id, Alert alert) {
+    public Alert updateAlert(Long id, Alert alert) {
         log.info("Actualizando alerta con ID: {}", id);
         restTemplate.put(alertsApiUrl + "/{id}", alert, id);
         return getAlertById(id).orElse(null);
     }
     
-    public boolean deleteAlert(String id) {
+    public boolean deleteAlert(Long id) {
         log.info("Eliminando alerta con ID: {}", id);
         try {
             restTemplate.delete(alertsApiUrl + "/{id}", id);

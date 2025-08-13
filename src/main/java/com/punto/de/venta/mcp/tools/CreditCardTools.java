@@ -24,11 +24,11 @@ public class CreditCardTools {
     }
     
     @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el ID del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
-    public String agregarTarjetaCredito(@ToolParam String userId, @ToolParam String name, @ToolParam String bankName, 
+    public String agregarTarjetaCredito(@ToolParam Long userId, @ToolParam String name, @ToolParam String bankName, 
                                        @ToolParam String lastDigits, @ToolParam String creditLimit, @ToolParam String currency) {
         log.info("Agregando tarjeta de crédito para usuario: {} con nombre: {}", userId, name);
         
-        if (userId == null || userId.trim().isEmpty()) {
+        if (userId == null) {
             return "Error: El ID del usuario es requerido";
         }
         
@@ -43,7 +43,7 @@ public class CreditCardTools {
         try {
             // Crear la tarjeta de crédito
             CreditCard creditCard = new CreditCard();
-            creditCard.setUserId(Long.parseLong(userId));
+            creditCard.setUserId(userId);
             creditCard.setCardName(name);
             creditCard.setLastFourDigits(lastDigits);
             
@@ -80,10 +80,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "listarTarjetasCredito", description = "Lista todas las tarjetas de crédito registradas para un usuario. Requiere el ID del usuario.")
-    public String listarTarjetasCredito(@ToolParam String userId) {
+    public String listarTarjetasCredito(@ToolParam Long userId) {
         log.info("Listando tarjetas de crédito para usuario: {}", userId);
         
-        if (userId == null || userId.trim().isEmpty()) {
+        if (userId == null ) {
             return "Error: El ID del usuario es requerido";
         }
         
@@ -114,12 +114,12 @@ public class CreditCardTools {
     }
     
     @Tool(name = "actualizarTarjetaCredito", description = "Modifica datos de una tarjeta de crédito existente. Requiere el ID de la tarjeta y los campos a actualizar (nombre, últimos dígitos, límite, día de corte, día de pago).")
-    public String actualizarTarjetaCredito(@ToolParam String creditCardId, @ToolParam String name, 
+    public String actualizarTarjetaCredito(@ToolParam Long creditCardId, @ToolParam String name, 
                                           @ToolParam String lastDigits, @ToolParam String creditLimit,
                                           @ToolParam String cutOffDay, @ToolParam String paymentDueDay) {
         log.info("Actualizando tarjeta de crédito con ID: {}", creditCardId);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -177,10 +177,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "eliminarTarjetaCredito", description = "Elimina una tarjeta de crédito (solo si no tiene pagos o transacciones vinculadas). Requiere el ID de la tarjeta.")
-    public String eliminarTarjetaCredito(@ToolParam String creditCardId) {
+    public String eliminarTarjetaCredito(@ToolParam Long creditCardId) {
         log.info("Eliminando tarjeta de crédito con ID: {}", creditCardId);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -206,10 +206,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "obtenerFechasVencimientoProximas", description = "Lista tarjetas cuya fecha límite de pago esté próxima. Requiere el ID del usuario y el número de días hacia adelante (opcional, por defecto 30).")
-    public String obtenerFechasVencimientoProximas(@ToolParam String userId, @ToolParam String daysAhead) {
+    public String obtenerFechasVencimientoProximas(@ToolParam Long userId, @ToolParam String daysAhead) {
         log.info("Obteniendo fechas de vencimiento próximas para usuario: {} en los próximos {} días", userId, daysAhead);
         
-        if (userId == null || userId.trim().isEmpty()) {
+        if (userId == null) {
             return "Error: El ID del usuario es requerido";
         }
         
@@ -288,10 +288,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "calcularInteresSiNoPaga", description = "Calcula el interés estimado si no se paga la deuda para una fecha específica. Requiere el ID de la tarjeta y la fecha proyectada (opcional, formato YYYY-MM-DD).")
-    public String calcularInteresSiNoPaga(@ToolParam String creditCardId, @ToolParam String projectedDate) {
+    public String calcularInteresSiNoPaga(@ToolParam Long creditCardId, @ToolParam String projectedDate) {
         log.info("Calculando interés estimado para tarjeta: {} en fecha: {}", creditCardId, projectedDate);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -350,10 +350,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "recomendarEstrategiaPago", description = "Sugiere en qué orden pagar tarjetas basándose en fecha de corte, intereses y saldo. Requiere el ID del usuario.")
-    public String recomendarEstrategiaPago(@ToolParam String userId) {
+    public String recomendarEstrategiaPago(@ToolParam Long userId) {
         log.info("Generando recomendación de estrategia de pago para usuario: {}", userId);
         
-        if (userId == null || userId.trim().isEmpty()) {
+        if (userId == null) {
             return "Error: El ID del usuario es requerido";
         }
         
@@ -455,10 +455,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "simularPlanPagoTarjeta", description = "Simula cuánto tiempo tardará en liquidarse una tarjeta con pagos fijos mensuales. Requiere el ID de la tarjeta y el monto del pago mensual.")
-    public String simularPlanPagoTarjeta(@ToolParam String creditCardId, @ToolParam String monthlyPayment) {
+    public String simularPlanPagoTarjeta(@ToolParam Long creditCardId, @ToolParam String monthlyPayment) {
         log.info("Simulando plan de pago para tarjeta: {} con pago mensual: {}", creditCardId, monthlyPayment);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -547,10 +547,10 @@ public class CreditCardTools {
     }
     
     @Tool(name = "detectarTarjetasDuplicadas", description = "Detecta si el usuario registró la misma tarjeta varias veces por error comparando últimos dígitos y banco. Requiere el ID del usuario.")
-    public String detectarTarjetasDuplicadas(@ToolParam String userId) {
+    public String detectarTarjetasDuplicadas(@ToolParam Long userId) {
         log.info("Detectando tarjetas duplicadas para usuario: {}", userId);
         
-        if (userId == null || userId.trim().isEmpty()) {
+        if (userId == null) {
             return "Error: El ID del usuario es requerido";
         }
         

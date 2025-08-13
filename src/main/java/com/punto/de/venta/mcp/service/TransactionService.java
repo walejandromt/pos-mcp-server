@@ -38,7 +38,7 @@ public class TransactionService {
         return response.getBody();
     }
     
-    public Optional<Transaction> getTransactionById(String id) {
+    public Optional<Transaction> getTransactionById(Long id) {
         log.info("Obteniendo transacción con ID: {} desde: {}", id, transactionsApiUrl);
         try {
             Transaction transaction = restTemplate.getForObject(transactionsApiUrl + "/{id}", Transaction.class, id);
@@ -49,7 +49,7 @@ public class TransactionService {
         }
     }
     
-    public List<Transaction> getTransactionsByUserId(String userId) {
+    public List<Transaction> getTransactionsByUserId(Long userId) {
         log.info("Obteniendo transacciones para usuario: {} desde: {}", userId, transactionsApiUrl);
         ResponseEntity<List<Transaction>> response = restTemplate.exchange(
             transactionsApiUrl + "/user/{userId}",
@@ -61,7 +61,7 @@ public class TransactionService {
         return response.getBody();
     }
     
-    public List<Transaction> getTransactionsByUserIdAndType(String userId, String type) {
+    public List<Transaction> getTransactionsByUserIdAndType(Long userId, String type) {
         log.info("Obteniendo transacciones para usuario: {} con tipo: {} desde: {}", userId, type, transactionsApiUrl);
         ResponseEntity<List<Transaction>> response = restTemplate.exchange(
             transactionsApiUrl + "/user/{userId}/type/{type}",
@@ -73,7 +73,7 @@ public class TransactionService {
         return response.getBody();
     }
     
-    public List<Transaction> getTransactionsByUserIdAndCategory(String userId, String category) {
+    public List<Transaction> getTransactionsByUserIdAndCategory(Long userId, String category) {
         log.info("Obteniendo transacciones para usuario: {} con categoría: {} desde: {}", userId, category, transactionsApiUrl);
         ResponseEntity<List<Transaction>> response = restTemplate.exchange(
             transactionsApiUrl + "/user/{userId}/category/{category}",
@@ -85,7 +85,7 @@ public class TransactionService {
         return response.getBody();
     }
     
-    public List<Transaction> getTransactionsByUserIdAndDateRange(String userId, LocalDate startDate, LocalDate endDate) {
+    public List<Transaction> getTransactionsByUserIdAndDateRange(Long userId, LocalDate startDate, LocalDate endDate) {
         log.info("Obteniendo transacciones para usuario: {} en rango de fechas: {} - {} desde: {}", userId, startDate, endDate, transactionsApiUrl);
         ResponseEntity<List<Transaction>> response = restTemplate.exchange(
             transactionsApiUrl + "/user/{userId}/date-range?startDate={startDate}&endDate={endDate}",
@@ -97,7 +97,7 @@ public class TransactionService {
         return response.getBody();
     }
     
-    public BigDecimal getSumAmountByUserIdAndTypeAndDateRange(String userId, String type, LocalDate startDate, LocalDate endDate) {
+    public BigDecimal getSumAmountByUserIdAndTypeAndDateRange(Long userId, String type, LocalDate startDate, LocalDate endDate) {
         log.info("Calculando suma de transacciones para usuario: {} con tipo: {} en rango: {} - {} desde: {}", userId, type, startDate, endDate, transactionsApiUrl);
         try {
             BigDecimal sum = restTemplate.getForObject(
@@ -117,13 +117,13 @@ public class TransactionService {
         return restTemplate.postForObject(transactionsApiUrl, transaction, Transaction.class);
     }
     
-    public Transaction updateTransaction(String id, Transaction transaction) {
+    public Transaction updateTransaction(Long id, Transaction transaction) {
         log.info("Actualizando transacción con ID: {}", id);
         restTemplate.put(transactionsApiUrl + "/{id}", transaction, id);
         return getTransactionById(id).orElse(null);
     }
     
-    public boolean deleteTransaction(String id) {
+    public boolean deleteTransaction(Long id) {
         log.info("Eliminando transacción con ID: {}", id);
         try {
             restTemplate.delete(transactionsApiUrl + "/{id}", id);

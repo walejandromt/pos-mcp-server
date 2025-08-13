@@ -36,7 +36,7 @@ public class RecurringTransactionService {
         return response.getBody();
     }
     
-    public Optional<RecurringTransaction> getRecurringTransactionById(String id) {
+    public Optional<RecurringTransaction> getRecurringTransactionById(Long id) {
         log.info("Obteniendo transacción recurrente con ID: {} desde: {}", id, recurringTransactionsApiUrl);
         try {
             RecurringTransaction recurringTransaction = restTemplate.getForObject(recurringTransactionsApiUrl + "/{id}", RecurringTransaction.class, id);
@@ -47,7 +47,7 @@ public class RecurringTransactionService {
         }
     }
     
-    public List<RecurringTransaction> getRecurringTransactionsByUserId(String userId) {
+    public List<RecurringTransaction> getRecurringTransactionsByUserId(Long userId) {
         log.info("Obteniendo transacciones recurrentes para usuario: {} desde: {}", userId, recurringTransactionsApiUrl);
         ResponseEntity<List<RecurringTransaction>> response = restTemplate.exchange(
             recurringTransactionsApiUrl + "/user/{userId}",
@@ -59,7 +59,7 @@ public class RecurringTransactionService {
         return response.getBody();
     }
     
-    public List<RecurringTransaction> getRecurringTransactionsByUserIdAndType(String userId, String type) {
+    public List<RecurringTransaction> getRecurringTransactionsByUserIdAndType(Long userId, String type) {
         log.info("Obteniendo transacciones recurrentes para usuario: {} con tipo: {} desde: {}", userId, type, recurringTransactionsApiUrl);
         ResponseEntity<List<RecurringTransaction>> response = restTemplate.exchange(
             recurringTransactionsApiUrl + "/user/{userId}/type/{type}",
@@ -76,13 +76,13 @@ public class RecurringTransactionService {
         return restTemplate.postForObject(recurringTransactionsApiUrl, recurringTransaction, RecurringTransaction.class);
     }
     
-    public RecurringTransaction updateRecurringTransaction(String id, RecurringTransaction recurringTransaction) {
+    public RecurringTransaction updateRecurringTransaction(Long id, RecurringTransaction recurringTransaction) {
         log.info("Actualizando transacción recurrente con ID: {}", id);
         restTemplate.put(recurringTransactionsApiUrl + "/{id}", recurringTransaction, id);
         return getRecurringTransactionById(id).orElse(null);
     }
     
-    public boolean deleteRecurringTransaction(String id) {
+    public boolean deleteRecurringTransaction(Long id) {
         log.info("Eliminando transacción recurrente con ID: {}", id);
         try {
             restTemplate.delete(recurringTransactionsApiUrl + "/{id}", id);

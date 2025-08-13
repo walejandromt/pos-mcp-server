@@ -35,11 +35,11 @@ public class CreditCardPaymentTools {
     }
     
     @Tool(name = "agregarPagoTarjetaCredito", description = "Registra un pago hacia la tarjeta de crédito. Requiere el ID de la tarjeta, monto, fecha de pago (opcional), método de pago (opcional) y notas (opcional).")
-    public String agregarPagoTarjetaCredito(@ToolParam String creditCardId, @ToolParam String amount, 
+    public String agregarPagoTarjetaCredito(@ToolParam Long creditCardId, @ToolParam String amount, 
                                            @ToolParam String paymentDate, @ToolParam String paymentMethod, @ToolParam String notes) {
         log.info("Agregando pago de tarjeta de crédito para tarjeta: {} por monto: {}", creditCardId, amount);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -56,7 +56,7 @@ public class CreditCardPaymentTools {
             
             // Crear el pago
             CreditCardPayment payment = new CreditCardPayment();
-            payment.setCreditCardId(Long.parseLong(creditCardId));
+            payment.setCreditCardId(creditCardId);
             
             try {
                 payment.setAmountPaid(new BigDecimal(amount));
@@ -81,7 +81,7 @@ public class CreditCardPaymentTools {
                 
                 Transaction transaction = new Transaction();
                 User user = new User();
-                user.setId(creditCard.get().getUserId().toString());
+                user.setId(creditCard.get().getUserId());
                 transaction.setUser(user);
                 transaction.setType("EXPENSE");
                 transaction.setCategory("Credit Card Payment");
@@ -98,7 +98,7 @@ public class CreditCardPaymentTools {
                 transaction.setDescription(description);
                 
                 Transaction savedTransaction = transactionService.createTransaction(transaction);
-                payment.setTransactionId(Long.parseLong(savedTransaction.getId()));
+                payment.setTransactionId(savedTransaction.getId());
             }
             
             CreditCardPayment savedPayment = creditCardPaymentService.createCreditCardPayment(payment);
@@ -113,10 +113,10 @@ public class CreditCardPaymentTools {
     }
     
     @Tool(name = "listarPagosTarjetaCredito", description = "Lista pagos hechos a una tarjeta en un periodo específico. Requiere el ID de la tarjeta, fecha de inicio (opcional) y fecha de fin (opcional) en formato YYYY-MM-DD.")
-    public String listarPagosTarjetaCredito(@ToolParam String creditCardId, @ToolParam String startDate, @ToolParam String endDate) {
+    public String listarPagosTarjetaCredito(@ToolParam Long creditCardId, @ToolParam String startDate, @ToolParam String endDate) {
         log.info("Listando pagos de tarjeta de crédito: {} en rango: {} - {}", creditCardId, startDate, endDate);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -173,10 +173,10 @@ public class CreditCardPaymentTools {
     }
     
     @Tool(name = "calcularSaldoTarjetaCredito", description = "Calcula saldo actual considerando el límite, compras registradas y pagos. Requiere el ID de la tarjeta.")
-    public String calcularSaldoTarjetaCredito(@ToolParam String creditCardId) {
+    public String calcularSaldoTarjetaCredito(@ToolParam Long creditCardId) {
         log.info("Calculando saldo de tarjeta de crédito: {}", creditCardId);
         
-        if (creditCardId == null || creditCardId.trim().isEmpty()) {
+        if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
@@ -197,7 +197,7 @@ public class CreditCardPaymentTools {
             
             // Obtener transacciones de gastos con tarjeta de crédito (asumiendo que se marcan con una categoría específica)
             List<Transaction> transactions = transactionService.getTransactionsByUserIdAndCategory(
-                card.getUserId().toString(), "Credit Card");
+                card.getUserId(), "Credit Card");
             
             BigDecimal totalSpent = transactions.stream()
                 .map(Transaction::getAmount)

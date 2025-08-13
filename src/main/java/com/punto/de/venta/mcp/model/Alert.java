@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Alert {
-    private String id;
+    private Long id;
     private User user;
     private String alertType;
     private String message;
