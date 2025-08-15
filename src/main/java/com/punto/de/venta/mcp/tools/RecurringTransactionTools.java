@@ -1,8 +1,10 @@
 package com.punto.de.venta.mcp.tools;
 
 import com.punto.de.venta.mcp.model.RecurringTransaction;
+import com.punto.de.venta.mcp.model.TransactionCategory;
 import com.punto.de.venta.mcp.model.User;
 import com.punto.de.venta.mcp.service.RecurringTransactionService;
+import com.punto.de.venta.mcp.service.TransactionCategoryService;
 import com.punto.de.venta.mcp.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
@@ -20,10 +22,12 @@ import java.util.Optional;
 public class RecurringTransactionTools {
     
     private final RecurringTransactionService recurringTransactionService;
+    private final TransactionCategoryService transactionCategoryService;
     private final UserService userService;
     
-    public RecurringTransactionTools(RecurringTransactionService recurringTransactionService, UserService userService) {
+    public RecurringTransactionTools(RecurringTransactionService recurringTransactionService, TransactionCategoryService transactionCategoryService, UserService userService) {
         this.recurringTransactionService = recurringTransactionService;
+        this.transactionCategoryService = transactionCategoryService;
         this.userService = userService;
     }
     
@@ -69,7 +73,12 @@ public class RecurringTransactionTools {
             recurringTransaction.setFrequency(parseFrequency(frecuencia));
             recurringTransaction.setStartDate(parseDate(fechaInicio));
             recurringTransaction.setEndDate(parseDate(fechaFin));
-            recurringTransaction.setCategory(categoria != null ? categoria.trim() : "General");
+            // Obtener o crear categoría
+            TransactionCategory category = getCategoryByName(categoria, user.getId());
+            if (category == null) {
+                return "Error: No se pudo crear o encontrar la categoría especificada";
+            }
+            recurringTransaction.setTransactionCategory(category);
             
             RecurringTransaction savedTransaction = recurringTransactionService.createRecurringTransaction(recurringTransaction);
             return String.format("Ingreso recurrente registrado exitosamente - ID: %s, Descripción: %s, Monto: %s %s, Frecuencia: %s", 
@@ -123,7 +132,12 @@ public class RecurringTransactionTools {
             recurringTransaction.setFrequency(parseFrequency(frecuencia));
             recurringTransaction.setStartDate(parseDate(fechaInicio));
             recurringTransaction.setEndDate(parseDate(fechaFin));
-            recurringTransaction.setCategory(categoria != null ? categoria.trim() : "General");
+            // Obtener o crear categoría
+            TransactionCategory category = getCategoryByName(categoria, user.getId());
+            if (category == null) {
+                return "Error: No se pudo crear o encontrar la categoría especificada";
+            }
+            recurringTransaction.setTransactionCategory(category);
             
             RecurringTransaction savedTransaction = recurringTransactionService.createRecurringTransaction(recurringTransaction);
             return String.format("Gasto recurrente registrado exitosamente - ID: %s, Descripción: %s, Monto: %s %s, Frecuencia: %s", 
@@ -169,7 +183,8 @@ public class RecurringTransactionTools {
             for (RecurringTransaction transaction : transactions) {
                 result.append(String.format("- %s: %s (%s) - %s %s cada %s\n", 
                     transaction.getType(), transaction.getDescription(), 
-                    transaction.getCategory(), transaction.getAmount(), user.getCurrency(), 
+                    transaction.getTransactionCategory() != null ? transaction.getTransactionCategory().getCategoryName() : "Sin categoría", 
+                    transaction.getAmount(), user.getCurrency(), 
                     transaction.getFrequency()));
             }
             
@@ -264,6 +279,55 @@ public class RecurringTransactionTools {
         } catch (Exception e) {
             log.warn("No se pudo parsear la fecha: {}, usando fecha actual", dateStr);
             return LocalDate.now();
+        }
+    }
+    
+    private TransactionCategory getCategoryByName(String nombreCategoria, Long userId) {
+        if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) {
+            nombreCategoria = "General";
+        }
+        
+        try {
+            // Buscar categoría existente por nombre y usuario
+            List<TransactionCategory> categorias = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                userId, nombreCategoria.trim());
+            
+            if (!categorias.isEmpty()) {
+                return categorias.get(0);
+            }
+            
+            // Si no existe, crear nueva categoría
+            TransactionCategory nuevaCategoria = new TransactionCategory();
+            User user = new User();
+            user.setId(userId);
+            nuevaCategoria.setUser(user);
+            nuevaCategoria.setCategoryName(nombreCategoria.trim());
+            
+            TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(nuevaCategoria);
+            return categoriaCreada;
+        } catch (Exception e) {
+            log.error("Error al obtener/crear categoría: {}", nombreCategoria, e);
+            // Fallback: buscar categoría "General" o crear una
+            try {
+                List<TransactionCategory> generalCategories = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                    userId, "General");
+                if (!generalCategories.isEmpty()) {
+                    return generalCategories.get(0);
+                }
+                
+                // Crear categoría General como último recurso
+                TransactionCategory generalCategory = new TransactionCategory();
+                User user = new User();
+                user.setId(userId);
+                generalCategory.setUser(user);
+                generalCategory.setCategoryName("General");
+                
+                TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(generalCategory);
+                return categoriaCreada;
+            } catch (Exception fallbackException) {
+                log.error("Error al crear categoría de fallback", fallbackException);
+                return null;
+            }
         }
     }
 }

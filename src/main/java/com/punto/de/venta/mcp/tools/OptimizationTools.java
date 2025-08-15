@@ -1,10 +1,12 @@
 package com.punto.de.venta.mcp.tools;
 
 import com.punto.de.venta.mcp.model.Transaction;
+import com.punto.de.venta.mcp.model.TransactionCategory;
 import com.punto.de.venta.mcp.model.RecurringTransaction;
 import com.punto.de.venta.mcp.model.User;
 import com.punto.de.venta.mcp.model.Loan;
 import com.punto.de.venta.mcp.service.TransactionService;
+import com.punto.de.venta.mcp.service.TransactionCategoryService;
 import com.punto.de.venta.mcp.service.RecurringTransactionService;
 import com.punto.de.venta.mcp.service.UserService;
 import com.punto.de.venta.mcp.service.LoanService;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
@@ -27,12 +28,14 @@ import java.util.HashMap;
 public class OptimizationTools {
     
     private final TransactionService transactionService;
+    private final TransactionCategoryService transactionCategoryService;
     private final RecurringTransactionService recurringTransactionService;
     private final UserService userService;
     private final LoanService loanService;
     
-    public OptimizationTools(TransactionService transactionService, RecurringTransactionService recurringTransactionService, UserService userService, LoanService loanService) {
+    public OptimizationTools(TransactionService transactionService, TransactionCategoryService transactionCategoryService, RecurringTransactionService recurringTransactionService, UserService userService, LoanService loanService) {
         this.transactionService = transactionService;
+        this.transactionCategoryService = transactionCategoryService;
         this.recurringTransactionService = recurringTransactionService;
         this.userService = userService;
         this.loanService = loanService;
@@ -64,6 +67,12 @@ public class OptimizationTools {
             
             User user = userOpt.get();
             
+            // Obtener o crear categoría
+            TransactionCategory category = getCategoryByName(nuevaCategoria, user.getId());
+            if (category == null) {
+                return "Error: No se pudo crear o encontrar la categoría especificada";
+            }
+            
             // Obtener transacciones del último año
             LocalDate fechaInicio = LocalDate.now().minusYears(1);
             LocalDate fechaFin = LocalDate.now();
@@ -90,7 +99,7 @@ public class OptimizationTools {
             BigDecimal totalAgrupado = BigDecimal.ZERO;
             
             for (Transaction transaction : transaccionesSimilares) {
-                transaction.setCategory(nuevaCategoria.trim());
+                transaction.setTransactionCategory(category);
                 transactionService.updateTransaction(transaction.getId(), transaction);
                 actualizadas++;
                 totalAgrupado = totalAgrupado.add(transaction.getAmount());
@@ -132,7 +141,8 @@ public class OptimizationTools {
             
             // Agrupar por categoría
             Map<String, List<RecurringTransaction>> gastosPorCategoria = gastosRecurrentes.stream()
-                .collect(Collectors.groupingBy(RecurringTransaction::getCategory));
+                .collect(Collectors.groupingBy(t -> t.getTransactionCategory() != null ? 
+                    t.getTransactionCategory().getCategoryName() : "Sin categoría"));
             
             StringBuilder result = new StringBuilder();
             result.append("📱 ANÁLISIS DE SUSCRIPCIONES\n");
@@ -207,7 +217,8 @@ public class OptimizationTools {
             
             List<Transaction> transaccionesSinCategoria = transacciones.stream()
                 .filter(t -> "EXPENSE".equals(t.getType()))
-                .filter(t -> t.getCategory() == null || "General".equals(t.getCategory()))
+                .filter(t -> t.getTransactionCategory() == null || 
+                           (t.getTransactionCategory() != null && "General".equals(t.getTransactionCategory().getCategoryName())))
                 .collect(Collectors.toList());
             
             if (transaccionesSinCategoria.isEmpty()) {
@@ -247,23 +258,27 @@ public class OptimizationTools {
             
             for (Transaction transaction : transaccionesSinCategoria) {
                 String descripcion = transaction.getDescription().toLowerCase();
-                String categoriaAsignada = null;
+                String nombreCategoriaAsignada = null;
                 
                 // Buscar coincidencias en las reglas
                 for (Map.Entry<String, String> regla : reglasCategorizacion.entrySet()) {
                     if (descripcion.contains(regla.getKey())) {
-                        categoriaAsignada = regla.getValue();
+                        nombreCategoriaAsignada = regla.getValue();
                         break;
                     }
                 }
                 
-                if (categoriaAsignada != null) {
-                    transaction.setCategory(categoriaAsignada);
-                    transactionService.updateTransaction(transaction.getId(), transaction);
-                    categorizadas++;
-                    
-                    result.append(String.format("✅ %s → %s\n", 
-                        transaction.getDescription(), categoriaAsignada));
+                if (nombreCategoriaAsignada != null) {
+                    // Obtener o crear categoría
+                    TransactionCategory category = getCategoryByName(nombreCategoriaAsignada, user.getId());
+                    if (category != null) {
+                        transaction.setTransactionCategory(category);
+                        transactionService.updateTransaction(transaction.getId(), transaction);
+                        categorizadas++;
+                        
+                        result.append(String.format("✅ %s → %s\n", 
+                            transaction.getDescription(), nombreCategoriaAsignada));
+                    }
                 }
             }
             
@@ -355,6 +370,55 @@ public class OptimizationTools {
         }
     }
     
+    private TransactionCategory getCategoryByName(String nombreCategoria, Long userId) {
+        if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) {
+            nombreCategoria = "General";
+        }
+        
+        try {
+            // Buscar categoría existente por nombre y usuario
+            List<TransactionCategory> categorias = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                userId, nombreCategoria.trim());
+            
+            if (!categorias.isEmpty()) {
+                return categorias.get(0);
+            }
+            
+            // Si no existe, crear nueva categoría
+            TransactionCategory nuevaCategoria = new TransactionCategory();
+            User user = new User();
+            user.setId(userId);
+            nuevaCategoria.setUser(user);
+            nuevaCategoria.setCategoryName(nombreCategoria.trim());
+            
+            TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(nuevaCategoria);
+            return categoriaCreada;
+        } catch (Exception e) {
+            log.error("Error al obtener/crear categoría: {}", nombreCategoria, e);
+            // Fallback: buscar categoría "General" o crear una
+            try {
+                List<TransactionCategory> generalCategories = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                    userId, "General");
+                if (!generalCategories.isEmpty()) {
+                    return generalCategories.get(0);
+                }
+                
+                // Crear categoría General como último recurso
+                TransactionCategory generalCategory = new TransactionCategory();
+                User user = new User();
+                user.setId(userId);
+                generalCategory.setUser(user);
+                generalCategory.setCategoryName("General");
+                
+                TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(generalCategory);
+                return categoriaCreada;
+            } catch (Exception fallbackException) {
+                log.error("Error al crear categoría de fallback", fallbackException);
+                return null;
+            }
+        }
+    }
+    
     private BigDecimal calcularMontoMensual(RecurringTransaction transaction) {
         BigDecimal monto = transaction.getAmount();
         String frecuencia = transaction.getFrequency();
@@ -367,7 +431,7 @@ public class OptimizationTools {
             case "MONTHLY":
                 return monto;
             case "YEARLY":
-                return monto.divide(BigDecimal.valueOf(12), 2, BigDecimal.ROUND_HALF_UP);
+                return monto.divide(BigDecimal.valueOf(12), 2, java.math.RoundingMode.HALF_UP);
             default:
                 return monto;
         }

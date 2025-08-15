@@ -2,8 +2,10 @@ package com.punto.de.venta.mcp.tools;
 
 import com.punto.de.venta.mcp.model.Budget;
 import com.punto.de.venta.mcp.model.Transaction;
+import com.punto.de.venta.mcp.model.TransactionCategory;
 import com.punto.de.venta.mcp.model.User;
 import com.punto.de.venta.mcp.service.BudgetService;
+import com.punto.de.venta.mcp.service.TransactionCategoryService;
 import com.punto.de.venta.mcp.service.TransactionService;
 import com.punto.de.venta.mcp.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -23,11 +26,13 @@ public class BudgetTools {
     
     private final BudgetService budgetService;
     private final TransactionService transactionService;
+    private final TransactionCategoryService transactionCategoryService;
     private final UserService userService;
     
-    public BudgetTools(BudgetService budgetService, TransactionService transactionService, UserService userService) {
+    public BudgetTools(BudgetService budgetService, TransactionService transactionService, TransactionCategoryService transactionCategoryService, UserService userService) {
         this.budgetService = budgetService;
         this.transactionService = transactionService;
+        this.transactionCategoryService = transactionCategoryService;
         this.userService = userService;
     }
     
@@ -59,10 +64,16 @@ public class BudgetTools {
             
             User user = userOpt.get();
             
+            // Obtener o crear categoría
+            TransactionCategory category = getCategoryByName(categoria, user.getId());
+            if (category == null) {
+                return "Error: No se pudo crear o encontrar la categoría especificada";
+            }
+            
             // Crear presupuesto
             Budget budget = new Budget();
             budget.setUser(user);
-            budget.setCategory(categoria.trim());
+            budget.setTransactionCategory(category);
             budget.setAmountLimit(montoLimite);
             budget.setPeriod(parsePeriod(periodo));
             budget.setStartDate(parseDate(fechaInicio));
@@ -70,7 +81,7 @@ public class BudgetTools {
             
             Budget savedBudget = budgetService.createBudget(budget);
             return String.format("Presupuesto definido exitosamente - ID: %s, Categoría: %s, Límite: %s %s, Periodo: %s", 
-                savedBudget.getId(), savedBudget.getCategory(), savedBudget.getAmountLimit(), 
+                savedBudget.getId(), savedBudget.getTransactionCategory().getCategoryName(), savedBudget.getAmountLimit(), 
                 user.getCurrency(), savedBudget.getPeriod());
         } catch (Exception e) {
             log.error("Error al definir presupuesto", e);
@@ -99,8 +110,19 @@ public class BudgetTools {
             
             User user = userOpt.get();
             
-            // Obtener presupuesto por categoría
-            List<Budget> budgets = budgetService.getBudgetsByUserIdAndCategory(user.getId(), categoria.trim());
+            // Obtener o buscar categoría
+            TransactionCategory category = getCategoryByName(categoria, user.getId());
+            if (category == null) {
+                return "Error: No se pudo encontrar la categoría especificada";
+            }
+            
+            // Obtener presupuesto por categoría - usar directamente el servicio getBudgetsByUserId y filtrar
+            List<Budget> allBudgets = budgetService.getBudgetsByUserId(user.getId());
+            List<Budget> budgets = allBudgets.stream()
+                .filter(b -> b.getTransactionCategory() != null && 
+                           b.getTransactionCategory().getId().equals(category.getId()))
+                .collect(Collectors.toList());
+            
             if (budgets.isEmpty()) {
                 return "No tienes un presupuesto definido para la categoría: " + categoria;
             }
@@ -108,7 +130,7 @@ public class BudgetTools {
             Budget budget = budgets.get(0); // Tomar el primer presupuesto de la categoría
             
             // Obtener gastos de la categoría en el periodo del presupuesto
-            List<Transaction> gastos = transactionService.getTransactionsByUserIdAndCategory(user.getId(), categoria.trim());
+            List<Transaction> gastos = transactionService.getTransactionsByUserIdAndCategoryId(user.getId(), category.getId());
             
             // Filtrar gastos por fecha del presupuesto
             LocalDate startDate = budget.getStartDate();
@@ -123,7 +145,7 @@ public class BudgetTools {
             
             BigDecimal limite = budget.getAmountLimit();
             BigDecimal restante = limite.subtract(totalGastado);
-            BigDecimal porcentajeUsado = totalGastado.multiply(BigDecimal.valueOf(100)).divide(limite, 2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal porcentajeUsado = totalGastado.multiply(BigDecimal.valueOf(100)).divide(limite, 2, java.math.RoundingMode.HALF_UP);
             
             StringBuilder result = new StringBuilder();
             result.append(String.format("Estado del presupuesto para %s:\n", categoria));
@@ -175,7 +197,8 @@ public class BudgetTools {
             
             for (Budget budget : budgets) {
                 result.append(String.format("- %s: %s %s (%s)\n", 
-                    budget.getCategory(), budget.getAmountLimit(), user.getCurrency(), 
+                    budget.getTransactionCategory() != null ? budget.getTransactionCategory().getCategoryName() : "Sin categoría", 
+                    budget.getAmountLimit(), user.getCurrency(), 
                     budget.getPeriod()));
             }
             
@@ -231,6 +254,55 @@ public class BudgetTools {
         } catch (Exception e) {
             log.error("Error al predecir gastos", e);
             return "Error al predecir los gastos: " + e.getMessage();
+        }
+    }
+    
+    private TransactionCategory getCategoryByName(String nombreCategoria, Long userId) {
+        if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) {
+            nombreCategoria = "General";
+        }
+        
+        try {
+            // Buscar categoría existente por nombre y usuario
+            List<TransactionCategory> categorias = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                userId, nombreCategoria.trim());
+            
+            if (!categorias.isEmpty()) {
+                return categorias.get(0);
+            }
+            
+            // Si no existe, crear nueva categoría
+            TransactionCategory nuevaCategoria = new TransactionCategory();
+            User user = new User();
+            user.setId(userId);
+            nuevaCategoria.setUser(user);
+            nuevaCategoria.setCategoryName(nombreCategoria.trim());
+            
+            TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(nuevaCategoria);
+            return categoriaCreada;
+        } catch (Exception e) {
+            log.error("Error al obtener/crear categoría: {}", nombreCategoria, e);
+            // Fallback: buscar categoría "General" o crear una
+            try {
+                List<TransactionCategory> generalCategories = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                    userId, "General");
+                if (!generalCategories.isEmpty()) {
+                    return generalCategories.get(0);
+                }
+                
+                // Crear categoría General como último recurso
+                TransactionCategory generalCategory = new TransactionCategory();
+                User user = new User();
+                user.setId(userId);
+                generalCategory.setUser(user);
+                generalCategory.setCategoryName("General");
+                
+                TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(generalCategory);
+                return categoriaCreada;
+            } catch (Exception fallbackException) {
+                log.error("Error al crear categoría de fallback", fallbackException);
+                return null;
+            }
         }
     }
     

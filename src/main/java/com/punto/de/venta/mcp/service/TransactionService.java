@@ -73,14 +73,14 @@ public class TransactionService {
         return response.getBody();
     }
     
-    public List<Transaction> getTransactionsByUserIdAndCategory(Long userId, String category) {
-        log.info("Obteniendo transacciones para usuario: {} con categoría: {} desde: {}", userId, category, transactionsApiUrl);
+    public List<Transaction> getTransactionsByUserIdAndCategoryId(Long userId, Long categoryId) {
+        log.info("Obteniendo transacciones para usuario: {} con categoría: {} desde: {}", userId, categoryId, transactionsApiUrl);
         ResponseEntity<List<Transaction>> response = restTemplate.exchange(
-            transactionsApiUrl + "/user/{userId}/category/{category}",
+            transactionsApiUrl + "/user/{userId}/category/{categoryId}",
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<Transaction>>() {},
-            userId, category
+            userId, categoryId
         );
         return response.getBody();
     }

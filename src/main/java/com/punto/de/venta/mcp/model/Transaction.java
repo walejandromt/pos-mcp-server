@@ -16,7 +16,7 @@ public class Transaction {
     private User user;
     private String type;
     private String description;
-    private String category;
+    private TransactionCategory transactionCategory;
     private BigDecimal amount;
     private LocalDate transactionDate;
     private String recurringRef;

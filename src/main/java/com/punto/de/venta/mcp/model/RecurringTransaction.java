@@ -21,7 +21,7 @@ public class RecurringTransaction {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal interestRate;
-    private String category;
+    private TransactionCategory transactionCategory;
     private String metadata;
     private LocalDateTime createdAt;
 }

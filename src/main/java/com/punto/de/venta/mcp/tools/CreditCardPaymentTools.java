@@ -3,9 +3,11 @@ package com.punto.de.venta.mcp.tools;
 import com.punto.de.venta.mcp.model.CreditCard;
 import com.punto.de.venta.mcp.model.CreditCardPayment;
 import com.punto.de.venta.mcp.model.Transaction;
+import com.punto.de.venta.mcp.model.TransactionCategory;
 import com.punto.de.venta.mcp.model.User;
 import com.punto.de.venta.mcp.service.CreditCardPaymentService;
 import com.punto.de.venta.mcp.service.CreditCardService;
+import com.punto.de.venta.mcp.service.TransactionCategoryService;
 import com.punto.de.venta.mcp.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
@@ -14,9 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -25,13 +26,16 @@ public class CreditCardPaymentTools {
     private final CreditCardPaymentService creditCardPaymentService;
     private final CreditCardService creditCardService;
     private final TransactionService transactionService;
+    private final TransactionCategoryService transactionCategoryService;
     
     public CreditCardPaymentTools(CreditCardPaymentService creditCardPaymentService,
                                 CreditCardService creditCardService,
-                                TransactionService transactionService) {
+                                TransactionService transactionService,
+                                TransactionCategoryService transactionCategoryService) {
         this.creditCardPaymentService = creditCardPaymentService;
         this.creditCardService = creditCardService;
         this.transactionService = transactionService;
+        this.transactionCategoryService = transactionCategoryService;
     }
     
     @Tool(name = "agregarPagoTarjetaCredito", description = "Registra un pago hacia la tarjeta de crédito. Requiere el ID de la tarjeta, monto, fecha de pago (opcional), método de pago (opcional) y notas (opcional).")
@@ -84,7 +88,11 @@ public class CreditCardPaymentTools {
                 user.setId(creditCard.get().getUser().getId());
                 transaction.setUser(user);
                 transaction.setType("EXPENSE");
-                transaction.setCategory("Credit Card Payment");
+                // Obtener o crear categoría para pagos de tarjeta
+                TransactionCategory category = getCategoryByName("Credit Card Payment", creditCard.get().getUser().getId());
+                if (category != null) {
+                    transaction.setTransactionCategory(category);
+                }
                 transaction.setAmount(payment.getAmountPaid());
                 transaction.setTransactionDate(payment.getPaymentDate());
                 
@@ -195,9 +203,13 @@ public class CreditCardPaymentTools {
                 .map(CreditCardPayment::getAmountPaid)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             
-            // Obtener transacciones de gastos con tarjeta de crédito (asumiendo que se marcan con una categoría específica)
-            List<Transaction> transactions = transactionService.getTransactionsByUserIdAndCategory(
-                card.getUser().getId(), "Credit Card");
+            // Obtener transacciones de gastos con tarjeta de crédito (asumiendo que se marcan con creditCardId)
+            // En lugar de buscar por categoría, buscaremos por todos los gastos del usuario y filtrar por creditCardId
+            List<Transaction> allTransactions = transactionService.getTransactionsByUserId(card.getUser().getId());
+            List<Transaction> transactions = allTransactions.stream()
+                .filter(t -> "EXPENSE".equals(t.getType()) && 
+                           creditCardId.toString().equals(t.getCreditCardId()))
+                .collect(Collectors.toList());
             
             BigDecimal totalSpent = transactions.stream()
                 .map(Transaction::getAmount)
@@ -208,7 +220,7 @@ public class CreditCardPaymentTools {
             BigDecimal currentBalance = totalSpent.subtract(totalPaid);
             BigDecimal availableCredit = creditLimit.subtract(currentBalance);
             BigDecimal utilizationPercentage = creditLimit.compareTo(BigDecimal.ZERO) > 0 ? 
-                currentBalance.divide(creditLimit, 4, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100")) : 
+                currentBalance.divide(creditLimit, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal("100")) : 
                 BigDecimal.ZERO;
             
             StringBuilder result = new StringBuilder();
@@ -231,6 +243,55 @@ public class CreditCardPaymentTools {
         } catch (Exception e) {
             log.error("Error al calcular saldo de tarjeta de crédito", e);
             return "Error al calcular saldo de tarjeta de crédito: " + e.getMessage();
+        }
+    }
+    
+    private TransactionCategory getCategoryByName(String nombreCategoria, Long userId) {
+        if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) {
+            nombreCategoria = "General";
+        }
+        
+        try {
+            // Buscar categoría existente por nombre y usuario
+            List<TransactionCategory> categorias = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                userId, nombreCategoria.trim());
+            
+            if (!categorias.isEmpty()) {
+                return categorias.get(0);
+            }
+            
+            // Si no existe, crear nueva categoría
+            TransactionCategory nuevaCategoria = new TransactionCategory();
+            User user = new User();
+            user.setId(userId);
+            nuevaCategoria.setUser(user);
+            nuevaCategoria.setCategoryName(nombreCategoria.trim());
+            
+            TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(nuevaCategoria);
+            return categoriaCreada;
+        } catch (Exception e) {
+            log.error("Error al obtener/crear categoría: {}", nombreCategoria, e);
+            // Fallback: buscar categoría "General" o crear una
+            try {
+                List<TransactionCategory> generalCategories = transactionCategoryService.searchTransactionCategoriesByUserIdAndCategoryName(
+                    userId, "General");
+                if (!generalCategories.isEmpty()) {
+                    return generalCategories.get(0);
+                }
+                
+                // Crear categoría General como último recurso
+                TransactionCategory generalCategory = new TransactionCategory();
+                User user = new User();
+                user.setId(userId);
+                generalCategory.setUser(user);
+                generalCategory.setCategoryName("General");
+                
+                TransactionCategory categoriaCreada = transactionCategoryService.createTransactionCategory(generalCategory);
+                return categoriaCreada;
+            } catch (Exception fallbackException) {
+                log.error("Error al crear categoría de fallback", fallbackException);
+                return null;
+            }
         }
     }
 }

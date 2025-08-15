@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class Budget {
     private Long id;
     private User user;
-    private String category;
+    private TransactionCategory transactionCategory;
     private BigDecimal amountLimit;
     private String period;
     private LocalDate startDate;
