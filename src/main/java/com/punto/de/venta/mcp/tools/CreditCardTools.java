@@ -4,7 +4,7 @@ import com.punto.de.venta.mcp.model.CreditCard;
 import com.punto.de.venta.mcp.service.CreditCardService;
 import com.punto.de.venta.mcp.service.UserService;
 
-import lombok.experimental.Accessors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -32,13 +32,13 @@ public class CreditCardTools {
     @Autowired
     private ObjectMapper objectMapper;
     
-    @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el ID del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
-    public String agregarTarjetaCredito(@ToolParam Long userId, @ToolParam String name, @ToolParam(description = "Banco o emisor de la tarjeta.") String bankName, 
+    @Tool(name = "agregarTarjetaCredito", description = "Registra una nueva tarjeta de crédito para un usuario. Requiere el número de teléfono del usuario, nombre de la tarjeta, banco, últimos dígitos, límite de crédito y moneda.")
+    public String agregarTarjetaCredito(@ToolParam String numeroTelefono, @ToolParam String name, @ToolParam(description = "Banco o emisor de la tarjeta.") String bankName, 
                                        @ToolParam(description = "Últimos 4 dígitos de la tarjeta (ej. 1234).") String lastDigits, @ToolParam(description = "Límite total de crédito asignado por el banco.") String creditLimit, @ToolParam String currency, @ToolParam(description = "Día del mes en que cierra el periodo de facturación (ej. 20).") Integer cutOffDay, @ToolParam(description = "Día del mes en que vence el pago (ej. 10).") Integer paymentDueDay) {
-        log.info("Agregando tarjeta de crédito para usuario: {} con nombre: {}", userId, name);
+        log.info("Agregando tarjeta de crédito para usuario: {} con nombre: {}", numeroTelefono, name);
         
-        if (userId == null) {
-            return "Error: El ID del usuario es requerido";
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
         }
         
         if (name == null || name.trim().isEmpty()) {
@@ -58,9 +58,15 @@ public class CreditCardTools {
         }
         
         try {
+            // Obtener usuario por teléfono
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
             // Crear la tarjeta de crédito
             CreditCard creditCard = new CreditCard();
-            creditCard.setUser(userService.getUserById(userId).get());
+            creditCard.setUser(userOpt.get());
             creditCard.setCardName(name);
             creditCard.setLastFourDigits(lastDigits);
             creditCard.setCutOffDay(cutOffDay);
@@ -103,16 +109,22 @@ public class CreditCardTools {
         }
     }
     
-    @Tool(name = "listarTarjetasCredito", description = "Lista todas las tarjetas de crédito registradas para un usuario. Requiere el ID del usuario.")
-    public String listarTarjetasCredito(@ToolParam Long userId) {
-        log.info("Listando tarjetas de crédito para usuario: {}", userId);
+    @Tool(name = "listarTarjetasCredito", description = "Lista todas las tarjetas de crédito registradas para un usuario. Requiere el número de teléfono del usuario.")
+    public String listarTarjetasCredito(@ToolParam String numeroTelefono) {
+        log.info("Listando tarjetas de crédito para usuario: {}", numeroTelefono);
         
-        if (userId == null ) {
-            return "Error: El ID del usuario es requerido";
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
         }
         
         try {
-            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userId);
+            // Obtener usuario por teléfono
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
+            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userOpt.get().getId());
             
             if (creditCards.isEmpty()) {
                 return "No tienes tarjetas de crédito registradas";
@@ -229,12 +241,12 @@ public class CreditCardTools {
         }
     }
     
-    @Tool(name = "obtenerFechasVencimientoProximas", description = "Lista tarjetas cuya fecha límite de pago esté próxima. Requiere el ID del usuario y el número de días hacia adelante (opcional, por defecto 30).")
-    public String obtenerFechasVencimientoProximas(@ToolParam Long userId, @ToolParam String daysAhead) {
-        log.info("Obteniendo fechas de vencimiento próximas para usuario: {} en los próximos {} días", userId, daysAhead);
+    @Tool(name = "obtenerFechasVencimientoProximas", description = "Lista tarjetas cuya fecha límite de pago esté próxima. Requiere el número de teléfono del usuario y el número de días hacia adelante (opcional, por defecto 30).")
+    public String obtenerFechasVencimientoProximas(@ToolParam String numeroTelefono, @ToolParam String daysAhead) {
+        log.info("Obteniendo fechas de vencimiento próximas para usuario: {} en los próximos {} días", numeroTelefono, daysAhead);
         
-        if (userId == null) {
-            return "Error: El ID del usuario es requerido";
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
         }
         
         int days = 30; // Por defecto 30 días
@@ -247,7 +259,13 @@ public class CreditCardTools {
         }
         
         try {
-            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userId);
+            // Obtener usuario por teléfono
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
+            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userOpt.get().getId());
             LocalDate today = LocalDate.now();
             LocalDate futureDate = today.plusDays(days);
             
@@ -373,16 +391,22 @@ public class CreditCardTools {
         }
     }
     
-    @Tool(name = "recomendarEstrategiaPago", description = "Sugiere en qué orden pagar tarjetas basándose en fecha de corte, intereses y saldo. Requiere el ID del usuario.")
-    public String recomendarEstrategiaPago(@ToolParam Long userId) {
-        log.info("Generando recomendación de estrategia de pago para usuario: {}", userId);
+    @Tool(name = "recomendarEstrategiaPago", description = "Sugiere en qué orden pagar tarjetas basándose en fecha de corte, intereses y saldo. Requiere el número de teléfono del usuario.")
+    public String recomendarEstrategiaPago(@ToolParam String numeroTelefono) {
+        log.info("Generando recomendación de estrategia de pago para usuario: {}", numeroTelefono);
         
-        if (userId == null) {
-            return "Error: El ID del usuario es requerido";
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
         }
         
         try {
-            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userId);
+            // Obtener usuario por teléfono
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
+            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userOpt.get().getId());
             
             if (creditCards.isEmpty()) {
                 return "El usuario no tiene tarjetas de crédito registradas";
@@ -570,16 +594,22 @@ public class CreditCardTools {
         }
     }
     
-    @Tool(name = "detectarTarjetasDuplicadas", description = "Detecta si el usuario registró la misma tarjeta varias veces por error comparando últimos dígitos y banco. Requiere el ID del usuario.")
-    public String detectarTarjetasDuplicadas(@ToolParam Long userId) {
-        log.info("Detectando tarjetas duplicadas para usuario: {}", userId);
+    @Tool(name = "detectarTarjetasDuplicadas", description = "Detecta si el usuario registró la misma tarjeta varias veces por error comparando últimos dígitos y banco. Requiere el número de teléfono del usuario.")
+    public String detectarTarjetasDuplicadas(@ToolParam String numeroTelefono) {
+        log.info("Detectando tarjetas duplicadas para usuario: {}", numeroTelefono);
         
-        if (userId == null) {
-            return "Error: El ID del usuario es requerido";
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
         }
         
         try {
-            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userId);
+            // Obtener usuario por teléfono
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
+            List<CreditCard> creditCards = creditCardService.getCreditCardsByUserId(userOpt.get().getId());
             
             if (creditCards.size() <= 1) {
                 return "No se encontraron tarjetas duplicadas";

@@ -9,6 +9,7 @@ import com.punto.de.venta.mcp.service.CreditCardPaymentService;
 import com.punto.de.venta.mcp.service.CreditCardService;
 import com.punto.de.venta.mcp.service.TransactionCategoryService;
 import com.punto.de.venta.mcp.service.TransactionService;
+import com.punto.de.venta.mcp.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -27,21 +28,28 @@ public class CreditCardPaymentTools {
     private final CreditCardService creditCardService;
     private final TransactionService transactionService;
     private final TransactionCategoryService transactionCategoryService;
+    private final UserService userService;
     
     public CreditCardPaymentTools(CreditCardPaymentService creditCardPaymentService,
                                 CreditCardService creditCardService,
                                 TransactionService transactionService,
-                                TransactionCategoryService transactionCategoryService) {
+                                TransactionCategoryService transactionCategoryService,
+                                UserService userService) {
         this.creditCardPaymentService = creditCardPaymentService;
         this.creditCardService = creditCardService;
         this.transactionService = transactionService;
         this.transactionCategoryService = transactionCategoryService;
+        this.userService = userService;
     }
     
-    @Tool(name = "agregarPagoTarjetaCredito", description = "Registra un pago hacia la tarjeta de crédito. Requiere el ID de la tarjeta, monto, fecha de pago (opcional), método de pago (opcional) y notas (opcional).")
-    public String agregarPagoTarjetaCredito(@ToolParam Long creditCardId, @ToolParam String amount, 
+    @Tool(name = "agregarPagoTarjetaCredito", description = "Registra un pago hacia la tarjeta de crédito. Requiere el número de teléfono del usuario, ID de la tarjeta, monto, fecha de pago (opcional), método de pago (opcional) y notas (opcional).")
+    public String agregarPagoTarjetaCredito(@ToolParam String numeroTelefono, @ToolParam Long creditCardId, @ToolParam String amount, 
                                            @ToolParam String paymentDate, @ToolParam String paymentMethod, @ToolParam String notes) {
-        log.info("Agregando pago de tarjeta de crédito para tarjeta: {} por monto: {}", creditCardId, amount);
+        log.info("Agregando pago de tarjeta de crédito para usuario: {} tarjeta: {} por monto: {}", numeroTelefono, creditCardId, amount);
+        
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
+        }
         
         if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
@@ -52,10 +60,21 @@ public class CreditCardPaymentTools {
         }
         
         try {
+            // Verificar que el usuario existe
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
             // Verificar que la tarjeta existe
             var creditCard = creditCardService.getCreditCardById(creditCardId);
             if (creditCard.isEmpty()) {
                 return "Error: Tarjeta de crédito no encontrada";
+            }
+            
+            // Verificar que la tarjeta pertenece al usuario
+            if (!creditCard.get().getUser().getId().equals(userOpt.get().getId())) {
+                return "Error: La tarjeta de crédito no pertenece al usuario especificado";
             }
             
             // Crear el pago
@@ -120,19 +139,34 @@ public class CreditCardPaymentTools {
         }
     }
     
-    @Tool(name = "listarPagosTarjetaCredito", description = "Lista pagos hechos a una tarjeta en un periodo específico. Requiere el ID de la tarjeta, fecha de inicio (opcional) y fecha de fin (opcional) en formato YYYY-MM-DD.")
-    public String listarPagosTarjetaCredito(@ToolParam Long creditCardId, @ToolParam String startDate, @ToolParam String endDate) {
-        log.info("Listando pagos de tarjeta de crédito: {} en rango: {} - {}", creditCardId, startDate, endDate);
+    @Tool(name = "listarPagosTarjetaCredito", description = "Lista pagos hechos a una tarjeta en un periodo específico. Requiere el número de teléfono del usuario, ID de la tarjeta, fecha de inicio (opcional) y fecha de fin (opcional) en formato YYYY-MM-DD.")
+    public String listarPagosTarjetaCredito(@ToolParam String numeroTelefono, @ToolParam Long creditCardId, @ToolParam String startDate, @ToolParam String endDate) {
+        log.info("Listando pagos de tarjeta de crédito para usuario: {} tarjeta: {} en rango: {} - {}", numeroTelefono, creditCardId, startDate, endDate);
+        
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
+        }
         
         if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
         try {
+            // Verificar que el usuario existe
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
             // Verificar que la tarjeta existe
             var creditCard = creditCardService.getCreditCardById(creditCardId);
             if (creditCard.isEmpty()) {
                 return "Error: Tarjeta de crédito no encontrada";
+            }
+            
+            // Verificar que la tarjeta pertenece al usuario
+            if (!creditCard.get().getUser().getId().equals(userOpt.get().getId())) {
+                return "Error: La tarjeta de crédito no pertenece al usuario especificado";
             }
             
             List<CreditCardPayment> payments;
@@ -180,19 +214,34 @@ public class CreditCardPaymentTools {
         }
     }
     
-    @Tool(name = "calcularSaldoTarjetaCredito", description = "Calcula saldo actual considerando el límite, compras registradas y pagos. Requiere el ID de la tarjeta.")
-    public String calcularSaldoTarjetaCredito(@ToolParam Long creditCardId) {
-        log.info("Calculando saldo de tarjeta de crédito: {}", creditCardId);
+    @Tool(name = "calcularSaldoTarjetaCredito", description = "Calcula saldo actual considerando el límite, compras registradas y pagos. Requiere el número de teléfono del usuario y el ID de la tarjeta.")
+    public String calcularSaldoTarjetaCredito(@ToolParam String numeroTelefono, @ToolParam Long creditCardId) {
+        log.info("Calculando saldo de tarjeta de crédito para usuario: {} tarjeta: {}", numeroTelefono, creditCardId);
+        
+        if (numeroTelefono == null || numeroTelefono.trim().isEmpty()) {
+            return "Error: El número de teléfono no puede estar vacío";
+        }
         
         if (creditCardId == null) {
             return "Error: El ID de la tarjeta de crédito es requerido";
         }
         
         try {
+            // Verificar que el usuario existe
+            var userOpt = userService.getUserByPhone(numeroTelefono.trim());
+            if (userOpt.isEmpty()) {
+                return "Error: No se encontró usuario con el número de teléfono: " + numeroTelefono;
+            }
+            
             // Obtener la tarjeta
             var creditCard = creditCardService.getCreditCardById(creditCardId);
             if (creditCard.isEmpty()) {
                 return "Error: Tarjeta de crédito no encontrada";
+            }
+            
+            // Verificar que la tarjeta pertenece al usuario
+            if (!creditCard.get().getUser().getId().equals(userOpt.get().getId())) {
+                return "Error: La tarjeta de crédito no pertenece al usuario especificado";
             }
             
             CreditCard card = creditCard.get();
