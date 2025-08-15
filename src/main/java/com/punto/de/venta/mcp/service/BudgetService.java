@@ -72,7 +72,7 @@ public class BudgetService {
     }
     
     public Budget createBudget(Budget budget) {
-        log.info("Creando nuevo presupuesto para categoría: {}", budget.getCategory());
+        log.info("Creando nuevo presupuesto para categoría: {}", budget.getTransactionCategory().getCategoryName());
         return restTemplate.postForObject(budgetsApiUrl, budget, Budget.class);
     }
     

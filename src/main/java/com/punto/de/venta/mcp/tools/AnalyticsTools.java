@@ -12,9 +12,9 @@ import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
@@ -171,7 +171,7 @@ public class AnalyticsTools {
             // Calcular diferencia
             BigDecimal diferencia = gastosPeriodo1.subtract(gastosPeriodo2);
             BigDecimal porcentajeCambio = gastosPeriodo2.compareTo(BigDecimal.ZERO) > 0 ?
-                diferencia.multiply(BigDecimal.valueOf(100)).divide(gastosPeriodo2, 2, BigDecimal.ROUND_HALF_UP) :
+                diferencia.multiply(BigDecimal.valueOf(100)).divide(gastosPeriodo2, 2, RoundingMode.HALF_UP) :
                 BigDecimal.ZERO;
             
             StringBuilder result = new StringBuilder();
@@ -300,7 +300,7 @@ public class AnalyticsTools {
             Map<String, BigDecimal> gastosPorCategoria = transaccionesMes.stream()
                 .filter(t -> "EXPENSE".equals(t.getType()))
                 .collect(Collectors.groupingBy(
-                    Transaction::getCategory,
+                    t -> t.getTransactionCategory() != null ? t.getTransactionCategory().getCategoryName() : "Sin categoría",
                     Collectors.reducing(BigDecimal.ZERO, Transaction::getAmount, BigDecimal::add)
                 ));
             
@@ -336,7 +336,7 @@ public class AnalyticsTools {
                     .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
                     .forEach(entry -> {
                         BigDecimal porcentaje = gastosMes.compareTo(BigDecimal.ZERO) > 0 ?
-                            entry.getValue().multiply(BigDecimal.valueOf(100)).divide(gastosMes, 1, BigDecimal.ROUND_HALF_UP) :
+                            entry.getValue().multiply(BigDecimal.valueOf(100)).divide(gastosMes, 1, RoundingMode.HALF_UP) :
                             BigDecimal.ZERO;
                         result.append(String.format("%s: %s %s (%.1f%%)\n", 
                             entry.getKey(), entry.getValue(), user.getCurrency(), porcentaje));
